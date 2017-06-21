@@ -1,0 +1,2 @@
+# zabbixmgm
+Manages Zabbix resources
