@@ -1,14 +1,21 @@
 import core
 import item
 
+from pprint import pprint
+
 class zbxtemplate(core.zbx):
 
-    def __init__(self, api, templatename):
+    def __init__(self, api, templatename, groups, hosts=list()):
         super(zbxtemplate, self).__init__(api)
         self.objectname = templatename
-        self.update()
+        self.groups = groups
+        self.hosts = hosts
+        
         self.items = dict()
         self.applications = dict()
+        
+        self.update()
+        self.create()
 
     def update(self):
         self.get_query('template.get', filter={'host': self.objectname})
@@ -21,11 +28,12 @@ class zbxtemplate(core.zbx):
         return self.get_objectid('templateid')
 
 
-    def create(self, groups=list(), hosts=list()):
+    def create(self):
+
         params = {
                     'host': self.objectname, 
-                    'groups': dict(("groupid", groupid) for groupid in groups), 
-                    'hosts': dict(("hostid", hostid) for hostid in hosts)
+                    'groups': dict(("groupid", group.get_id()) for group in self.groups), 
+                    'hosts': dict(("hostid", host.get_id()) for host in self.hosts)
                 }
         self.create_object('template.create', params)
         
@@ -50,12 +58,16 @@ class zbxtemplate(core.zbx):
         self.delete_object('template.delete', [self.get_id()])
 
 
-    def create_application(self, applicationname, groups):
-        self.create(groups)
+    def create_application(self, applicationname):
+        self.create()
         if not applicationname in self.applications:
             self.applications[applicationname] = core.zbxapplication(self.api, applicationname=applicationname, hostid=self.get_id())
         
+        self.create()
         return self.applications[applicationname]
+
+
+
 
 
     def create_item(self, itemname, applicationname):
@@ -70,4 +82,5 @@ class zbxtemplate(core.zbx):
             # error
             print 'does nto exist'
 
+        self.create()
         return self.items[itemname]

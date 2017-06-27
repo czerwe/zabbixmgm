@@ -6,6 +6,7 @@ class zbxgroup(core.zbx):
         super(zbxgroup, self).__init__(api)
         self.objectname = groupname
         self.update()
+        self.create()
 
     def update(self):
         self.get_query('hostgroup.get', filter={'name': self.objectname})
