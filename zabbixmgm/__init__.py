@@ -1,6 +1,6 @@
 from core import zbxinterface, zbxhost, zbxapplication
 from group import zbxgroup
-from templates import zbxtemplate
+from template import zbxtemplate
 from item import zbxitem
 
 __version__ = '0.1.0'
