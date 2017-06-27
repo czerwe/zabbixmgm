@@ -1,6 +1,13 @@
 import core
 import re
 
+
+
+class InvalidFieldValue(Exception):
+    def __init__(self, message, status=0):
+        super(InvalidFieldValue, self).__init__(message, status)
+
+
 class zbxinterface(core.zbx):
 
     TYPE_AGENT = 1
@@ -8,25 +15,40 @@ class zbxinterface(core.zbx):
     TYPE_IPMI = 3
     TYPE_JMX = 4
 
-    def __init__(self, api, interfacename):
+    BULK_OFF = 0
+    BULK_ON = 1
+
+    def __init__(self, api):
         super(zbxinterface, self).__init__(api)
-        self.online_items  = dict()
-        self.objectname = interfacename
+        self.online_items = dict()
+
+        self.main = 'no'
+        self.host = '127.0.0.1'
+        self.port = '10050'
+
+
         self.set_default_params()
 
 
-    def write(self):
-        inerfaceid = self.online_items.get('interfaceid', False)
-        if not inerfaceid:
-            function = 'hostinterface.create'
-        else:
-            function = 'hostinterface.update'
-        
-        if self.get_interface().get('hostid', False):
-            result = self.api.do_request(function, self.get_interface())
+    def set_default_params(self):
+        self.add_param('type', zbxinterface.TYPE_AGENT)
+        self.add_param('main', 0)
+        self.add_param('host', '127.0.0.1')
+        self.add_param('port', '10050')
 
-            if result['result'].get('interfaceids', None):
-                self.add_param('interfacid', result['result']['interfaceids'])
+
+    # def write(self):
+    #     inerfaceid = self.online_items.get('interfaceid', False)
+    #     if not inerfaceid:
+    #         function = 'hostinterface.create'
+    #     else:
+    #         function = 'hostinterface.update'
+        
+    #     if self.get_interface().get('hostid', False):
+    #         result = self.api.do_request(function, self.get_interface())
+
+    #         if result['result'].get('interfaceids', None):
+    #             self.add_param('interfacid', result['result']['interfaceids'])
             
 
 
@@ -62,27 +84,74 @@ class zbxinterface(core.zbx):
             self.online_items['dns'] = value
         
 
-    def set_default_params(self):
-        self.add_param('type', zbxinterface.TYPE_AGENT)
-        self.add_param('main', 0)
-        self.add_param('host', '127.0.0.1')
-        self.add_param('port', '10050')
 
 
-    def add_param(self, key, value):
-        if key == 'host':
-            self.host = value
+
+    @property
+    def main(self):
+        return self.online_items.get('main', 0) 
+
+    @main.setter
+    def main(self, value):
+        if value in [1, True, 'yes']:
+            self.online_items['main'] = 1
         else:
-            self.online_items[key] = value
+            self.online_items['main'] = 0
 
-    def get_param(self, key):
-        if key == 'host':
-            return self.host
+
+
+    @property
+    def port(self):
+        return self.online_items.get('port', '10050') 
+
+    @port.setter
+    def port(self, value):
+        self.online_items['port'] = str(value) 
+
+
+    @property
+    def type(self):
+        return self.online_items.get('type', zbxinterface.TYPE_AGENT) 
+
+    @type.setter
+    def type(self, value):
+        if value in [zbxinterface.TYPE_AGENT, zbxinterface.TYPE_SNMP, zbxinterface.TYPE_IPMI, zbxinterface.TYPE_JMX]:
+            self.online_items['type'] = value
         else:
-            return self.online_items.get(key, '')
+            raise InvalidFieldValue(message='{0} is not a supported interface type'.format(value), status=2)
 
-    def set_main(self):
-        self.add_param('main', 1)
+    @property
+    def bulk(self):
+        return self.online_items.get('bulk', zbxinterface.TYPE_AGENT) 
+
+    @bulk.setter
+    def bulk(self, value):
+        if value in [zbxinterface.BULK_ON, zbxinterface.BULK_OFF]:
+            self.online_items['bulk'] = value
+        else:
+            raise InvalidFieldValue(message='{0} is not a supported interface type'.format(value), status=2)
+
+
+
+
+
+
+
+
+    # def add_param(self, key, value):
+    #     if key == 'host':
+    #         self.host = value
+    #     else:
+    #         self.online_items[key] = value
+
+    # def get_param(self, key):
+    #     if key == 'host':
+    #         return self.host
+    #     else:
+    #         return self.online_items.get(key, '')
+
+    # def set_main(self):
+    #     self.add_param('main', 1)
 
     def get_interface(self):
         return self.online_items
