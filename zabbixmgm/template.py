@@ -50,8 +50,8 @@ class zbxtemplate(core.zbx):
         self.delete_object('template.delete', [self.get_id()])
 
 
-    def create_application(self, applicationname):
-        self.create()
+    def create_application(self, applicationname, groups):
+        self.create(groups)
         if not applicationname in self.applications:
             self.applications[applicationname] = core.zbxapplication(self.api, applicationname=applicationname, hostid=self.get_id())
         

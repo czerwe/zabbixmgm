@@ -11,7 +11,8 @@ class zbx(object):
 
 
     def get_objectid(self, idstring):
-        if idstring in self.online_items.keys():
+
+        if type(self.online_items) == dict and idstring in self.online_items.keys():
             return self.online_items[idstring]
         else:
             return 0
