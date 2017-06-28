@@ -21,7 +21,7 @@ class zbx(object):
         self.objectname = None
         self.online_items = dict()
         self.difffields = list()
-
+        self.mergediff = dict()
 
     def get_objectid(self, idstring):
 
@@ -110,6 +110,7 @@ class zbx(object):
 
     def merge(self, iface):
         left, right, total = self.diff(iface)
+        self.mergediff = right
         for key in right.keys():
             self.online_items[key] = right[key]
 

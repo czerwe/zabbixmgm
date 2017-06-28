@@ -28,7 +28,7 @@ class zbxgroup(core.zbx):
 
     @property
     def groupid(self):
-        return self.online_items.get('groupid', '')
+        return self.online_items.get('groupid', None)
     
     @groupid.setter
     def groupid(self, value):

@@ -113,5 +113,19 @@ class group_tests(unittest2.TestCase):
         self.assertEqual(total['internal'], 1)
 
 
+    def test_group_merge(self):
+        tgroup = zabbixmgm.zbxgroup(self.apimock, 'mygroup')
+        fakegroup = {'groupid': 30,'name':'blub', 'internal': 1}
+
+
+        self.assertEqual(tgroup.name, 'mygroup')
+        self.assertEqual(tgroup.groupid, None)
+
+        tgroup.merge(fakegroup)
+
+        self.assertEqual(tgroup.name, 'blub')
+        self.assertEqual(tgroup.groupid, 30)
+        self.assertEqual(tgroup.internal, 1)
+
 
 
