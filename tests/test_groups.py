@@ -1,9 +1,9 @@
 import unittest2
 import zabbixmgm
-# from mock import Mock, call
+from mock import Mock, call
 # import responses_group
 
-# from pprint import pprint
+from pprint import pprint
 
 
 # class group_tests(unittest2.TestCase):
@@ -81,4 +81,37 @@ import zabbixmgm
     #     self.assertEqual(len(self.apimock.mock_calls), 3)
     #     self.assertEqual(int(grp.get_id()), 0)
         
+
+class group_tests(unittest2.TestCase):
+
+    def setUp(self):
+        self.apimock = Mock()
+
+
+    def tearDown(self):
+        pass
+
+
+    def test_group_setname(self):
+        tgroup = zabbixmgm.zbxgroup(self.apimock, 'mygroup')
+        self.assertEqual(tgroup.name, 'mygroup')
+
+
+    def test_group_diff(self):
+        tgroup = zabbixmgm.zbxgroup(self.apimock, 'mygroup')
+        fakegroup = {'name':'blub', 'internal': 1}
+
+        left, right, total = tgroup.diff(fakegroup)
+
+        self.assertEqual(len(left), 1)
+        self.assertEqual(left['name'], 'mygroup')
+        self.assertEqual(len(right), 2)
+        self.assertEqual(right['name'], 'blub')
+        self.assertEqual(right['internal'], 1)
+
+        self.assertEqual(len(total), 1)
+        self.assertEqual(total['internal'], 1)
+
+
+
 
