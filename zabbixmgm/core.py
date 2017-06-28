@@ -1,5 +1,13 @@
 from pprint import pprint
 
+
+class ReadOnlyField(Exception):
+    def __init__(self, message, status=0):
+        super(ReadOnlyField, self).__init__(message, status)
+
+
+
+
 class zbx(object):
 
     inventory = dict()
