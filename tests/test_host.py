@@ -36,7 +36,7 @@ class host_tests(unittest2.TestCase):
         iface.port = '3000'
         iface.host = 'mytesthost.local'
         thost.add_interface(iface)
-        create_params = thost.get('create')
+        create_command, create_params = thost.get('create')
 
         self.assertEqual(create_params['host'], 'mytesthost.local')
         self.assertEqual(len(create_params['interfaces']), 1)
@@ -55,7 +55,8 @@ class host_tests(unittest2.TestCase):
         iface2.host = '127.0.0.1'
         thost.add_interface(iface1)
         thost.add_interface(iface2)
-        create_params = thost.get('create')
+        create_command, create_params = thost.get('create')
+        pprint(create_params)
 
         self.assertEqual(create_params['host'], 'mytesthost.local')
         self.assertEqual(len(create_params['interfaces']), 2)
@@ -91,7 +92,7 @@ class host_tests(unittest2.TestCase):
         thost.add_interface(iface3)
         thost.add_interface(iface2)
         thost.add_interface(iface4)
-        create_params = thost.get('create')
+        create_command, create_params = thost.get('create')
         # pprint(create_params)
         self.assertEqual(len(create_params['interfaces']), 4)
 
@@ -230,7 +231,7 @@ class host_tests(unittest2.TestCase):
         thost.add_interface(iface2)
         thost.add_interface(iface4)
        
-        create_params = thost.get('create')
+        create_command, create_params = thost.get('create')
         self.assertEqual(len(create_params['interfaces']), 4)
         self.assertEqual(len(thost.interfaces[zabbixmgm.zbxinterface.TYPE_AGENT]), 2)
         self.assertEqual(len(thost.interfaces[zabbixmgm.zbxinterface.TYPE_JMX]), 2)
@@ -238,7 +239,7 @@ class host_tests(unittest2.TestCase):
         tpid, idx = thost.search_interface(host='mytesthost2.local', searchtype='host')
         thost.del_interface(tpid, idx)
 
-        create_params = thost.get('create')
+        create_command, create_params = thost.get('create')
         self.assertEqual(len(thost.interfaces[zabbixmgm.zbxinterface.TYPE_AGENT]), 2)
         self.assertEqual(len(thost.interfaces[zabbixmgm.zbxinterface.TYPE_JMX]), 1)
         self.assertEqual(len(create_params['interfaces']), 3)
@@ -247,7 +248,7 @@ class host_tests(unittest2.TestCase):
         tpid, idx = thost.search_interface(host='127.0.0.1', port='3004')
         thost.del_interface(tpid, idx)
 
-        create_params = thost.get('create')
+        create_command, create_params = thost.get('create')
         self.assertEqual(len(thost.interfaces[zabbixmgm.zbxinterface.TYPE_AGENT]), 2)
         self.assertEqual(len(thost.interfaces.keys()), 1)
         self.assertFalse(zabbixmgm.zbxinterface.TYPE_JMX in thost.interfaces.keys())
