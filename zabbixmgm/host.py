@@ -558,7 +558,7 @@ class zbxhost(core.zbx):
     def add_template(self, template):
         self.templates[template.get_name()] = template
 
-    def get(self, param_type):
+    def get(self, param_type='create'):
         # return self.interfaces
 
         # pprint(self.online_items)
