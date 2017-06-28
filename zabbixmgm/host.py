@@ -67,6 +67,14 @@ class zbxhost(core.zbx):
         self.templates = dict()
         # self.update()
 
+
+        self.apicommands = {
+            "get": "host.get",
+            "create": "host.create",
+            "update": "host.update",
+            "delete": "host.delete",
+        }
+
         self.difffields = ['hostid',
                             'host',
                             'name',
@@ -104,27 +112,34 @@ class zbxhost(core.zbx):
                             'tls_psk_identity',
                             'tls_psk']
 
+        self.readonlyfields = [
+                                'hostid',
+                                'available',
+                                'disable_until',
+                                'error',
+                                'errors_from',
+                                'flags',
+                                'ipmi_available', 
+                                'ipmi_disable_until',
+                                'ipmi_error',
+                                'ipmi_errors_from', 
+                                'jmx_available',
+                                'jmx_disable_until', 
+                                'jmx_error', 
+                                'jmx_errors_from', 
+                                'maintenance_from', 
+                                'maintenance_status',
+                                'maintenance_type',
+                                'maintenanceid',
+                                'snmp_available',
+                                'snmp_disable_until', 
+                                'snmp_error', 
+                                'snmp_errors_from',
+                            ]
 
-        
-        # for passed_group in group_instances:
-        #     if type(passed_group) == group.zbxgroup:
-        #         self.add_group(passed_group) 
-
-        # if len(self.groups) == 0:
-        #     autogengroup = group.zbxgroup(self.api, 'AutoGroup')
-        #     self.add_group(autogengroup)
-
-
-        # if interface_instance:
-        #     self.add_interface(interface_instance)
-        # else:
-        #     if not self.interfaces.get(interface.zbxinterface.TYPE_AGENT, False):
-        #         main_agent_interface = interface.zbxinterface(self.api, "agent")
-        #         main_agent_interface.add_param('host', hostname)
-        #         main_agent_interface.add_param('main', 1)
-        #         self.add_interface(main_agent_interface)
-        # self.create()
-
+    @property
+    def id(self):
+        return self.hostid
 
     @property
     def hostid(self):
@@ -145,6 +160,8 @@ class zbxhost(core.zbx):
         if not self.name:
             self.name = value
 
+        self.mergediff['host'] = value
+
 
     @property
     def name(self):
@@ -153,6 +170,7 @@ class zbxhost(core.zbx):
     @name.setter
     def name(self, value):
         self.online_items['name'] = value
+        self.mergediff['name'] = value
 
 
     @property
@@ -171,6 +189,7 @@ class zbxhost(core.zbx):
     @description.setter
     def description(self, value):
         self.online_items['description'] = value
+        self.mergediff['description'] = value
 
 
     @property
@@ -208,8 +227,8 @@ class zbxhost(core.zbx):
 
     @flags.setter
     def flags(self, value):
-        self.online_items['flags'] = value
-
+        raise core.ReadOnlyField('flags is an readonly field')
+        
 
     @property
     def inventory_mode(self):
@@ -250,7 +269,7 @@ class zbxhost(core.zbx):
 
     @ipmi_disable_until.setter
     def ipmi_disable_until(self, value):
-        self.online_items['ipmi_disable_until'] = value
+        raise core.ReadOnlyField('ipmi_disable_until is an readonly field')
 
 
     @property
@@ -278,6 +297,7 @@ class zbxhost(core.zbx):
     @ipmi_password.setter
     def ipmi_password(self, value):
         self.online_items['ipmi_password'] = value
+        self.mergediff['ipmi_password'] = value
 
 
     @property
@@ -299,6 +319,7 @@ class zbxhost(core.zbx):
     @ipmi_username.setter
     def ipmi_username(self, value):
         self.online_items['ipmi_username'] = value
+        self.mergediff['ipmi_username'] = value
 
 
     @property
@@ -380,6 +401,7 @@ class zbxhost(core.zbx):
     @proxy_hostid.setter
     def proxy_hostid(self, value):
         self.online_items['proxy_hostid'] = value
+        self.mergediff['proxy_hostid'] = value
 
 
     @property
@@ -425,6 +447,7 @@ class zbxhost(core.zbx):
     @status.setter
     def status(self, value):
         self.online_items['status'] = int(value)
+        self.mergediff['status'] = value
 
 
     @property
@@ -434,6 +457,7 @@ class zbxhost(core.zbx):
     @tls_issuer.setter
     def tls_issuer(self, value):
         self.online_items['tls_issuer'] = value
+        self.mergediff['tls_issuer'] = value
 
 
     @property
@@ -443,6 +467,7 @@ class zbxhost(core.zbx):
     @tls_subject.setter
     def tls_subject(self, value):
         self.online_items['tls_subject'] = value
+        self.mergediff['tls_subject'] = value
 
 
     @property
@@ -452,6 +477,7 @@ class zbxhost(core.zbx):
     @tls_psk_identity.setter
     def tls_psk_identity(self, value):
         self.online_items['tls_psk_identity'] = value
+        self.mergediff['tls_psk_identity'] = value
 
 
     @property
@@ -461,6 +487,7 @@ class zbxhost(core.zbx):
     @tls_psk.setter
     def tls_psk(self, value):
         self.online_items['tls_psk'] = value
+        self.mergediff['tls_psk'] = value
 
 
 
@@ -552,50 +579,48 @@ class zbxhost(core.zbx):
 
 
     def add_group(self, group):
-        self.groups[group.get_name()] = group
-
+        self.groups[group.name] = group
 
     def add_template(self, template):
-        self.templates[template.get_name()] = template
+        self.templates[template.name] = template
 
-    def get(self, param_type='create'):
-        # return self.interfaces
+    def get(self, param_type=None):
 
-        # pprint(self.online_items)
-        # print '************************'
-        # pprint(self.interfaces)
+        if not param_type:
+            if self.id:
+                param_type = 'update'
+            else:
+                param_type = 'create'
+
 
         if param_type == 'create':
-            params = {
-                    "host": self.host, 
-                    "interfaces": [interface_instance.get() for iftypeid in self.interfaces for interface_instance in self.interfaces[iftypeid]], 
-                    'groups': [{"groupid": self.groups[groupname].get_id()} for groupname in self.groups],
-                    'templates': [{"templateid": self.templates[templatename].get_id()} for templatename in self.templates], 
-                    
-                }
-            return params
+            if self.id:
+                return False
 
+            retval = dict(self.online_items)
+            retval['interfaces'] = [interface_instance.get() for iftypeid in self.interfaces for interface_instance in self.interfaces[iftypeid]]
+            retval['groups'] = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
+            retval['templates'] = [{"templateid": self.templates[templatename].id()} for templatename in self.templates]
 
+        if param_type == 'update':
+            if not self.id:
+                return False
+            retval = dict(self.mergediff)
+            retval['groups'] = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
+            retval['templates'] = [{"templateid": self.templates[templatename].id()} for templatename in self.templates]
 
-    # def create(self):
-    #     params = {
-    #                 "host": self.objectname, 
-    #                 "interfaces": [interface_instance.get_interface() for iftypeid in self.interfaces for interface_instance in self.interfaces[iftypeid]], 
-    #                 'groups': [{"groupid": self.groups[groupname].get_id()} for groupname in self.groups],
-    #                 'templates': [{"templateid": self.templates[templatename].get_id()} for templatename in self.templates], 
-                    
-    #             }
-        # self.create_object('host.create', params)
+        if param_type == 'delete':
+            if self.id:
+                retval = [self.id]
+            else:
+                retval = list()
 
-    # def delete(self):
-    #     if self.get_id() > 0:
-    #         result = self.api.do_request('host.delete', [self.hostonline['hostid']])
+        if param_type in ['create', 'update']:
+            for param in retval.keys():
+                if param in self.readonlyfields:
+                    if param_type == 'update' and param == 'hostid':
+                        continue
+                    else:
+                        del retval[param]
 
-    #         if 'result' in result and self.hostonline['hostid'] in result['result']['hostids']:
-    #             pprint("delete result: {0}".format(result))
-    #     else:
-    #         print ('no host on zabbix server')
-
-
-
-
+        return [self.apicommands[param_type], retval]

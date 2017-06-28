@@ -11,10 +11,16 @@ class zbxinterface(core.zbx):
     BULK_OFF = 0
     BULK_ON = 1
 
-    def __init__(self, api):
+    def __init__(self, api, interfacemask=None):
         super(zbxinterface, self).__init__(api)
         self.difffields = ['interfaceid', 'useip', 'ip', 'dns', 'port', 'bulk', 'type']
+
+        self.readonlyfields = ['interfaceid']
         self.online_items = dict()
+        
+        if interfacemask:
+            self.merge(interfacemask)
+
 
         self.main = 'no'
         self.host = '127.0.0.1'
@@ -22,6 +28,21 @@ class zbxinterface(core.zbx):
         self.type = zbxinterface.TYPE_AGENT
         self.main = 0
 
+
+
+
+    @property
+    def id(self):
+        return self.interfaceid
+
+
+    @property
+    def interfaceid(self):
+        return self.online_items.get('interfaceid', None) 
+
+    @interfaceid.setter
+    def interfaceid(self, value):
+        raise core.ReadOnlyField('snmp_errors_from is an readonly field')
 
 
     @property
@@ -106,8 +127,31 @@ class zbxinterface(core.zbx):
             raise core.InvalidFieldValue(message='{0} is not a supported interface type'.format(value), status=2)
 
 
-    def get(self):
-        return self.online_items
+    def get(self, param_type='create'):
+        if param_type == 'create':
+            retval = dict(self.online_items)
+        
+        if param_type == 'update':
+            if not self.interfaceid:
+                return False
+
+            retval = dict(self.mergediff)
+
+        if param_type == 'delete':
+            if self.interfaceid:
+                retval = [self.interfaceid]
+            else:
+                retval = list()
+
+        if param_type in ['create', 'update']:
+            for param in retval.keys():
+                if param in self.readonlyfields:
+                    if param_type == 'update' and param == 'interfaceid':
+                        continue
+                    else:
+                        del retval[param]
+
+        return retval
 
     # def write(self):
     #     inerfaceid = self.online_items.get('interfaceid', False)

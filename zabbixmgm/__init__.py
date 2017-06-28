@@ -4,6 +4,7 @@ from template import zbxtemplate
 from item import zbxitem
 from interface import zbxinterface
 from host import zbxhost
+from queryutils import *
 
 __version__ = '0.1.0'
 

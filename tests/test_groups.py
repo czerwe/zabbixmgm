@@ -148,5 +148,15 @@ class group_tests(unittest2.TestCase):
         self.assertTrue('name' in cr.keys())
 
 
+    def test_group_delete_dict(self):
+        tgroup = zabbixmgm.zbxgroup(self.apimock, 'mygroup')
+        fakegroup = {'groupid': 30,'name':'blub', 'internal': 1}
+        tgroup.merge(fakegroup)
+        
+        cr = tgroup.get('delete')
+        self.assertEqual(len(cr), 1)
+        self.assertEqual(cr[0], 30)
+        
+
 
 

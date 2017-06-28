@@ -8,7 +8,7 @@ class zbxgroup(core.zbx):
     INTERNAL_NOT_NORMAL = 0
     INTERNAL_INTERNAL = 1
 
-    def __init__(self, api, name):
+    def __init__(self, api, name, groupmask=None):
         super(zbxgroup, self).__init__(api)
         self.name = name
 
@@ -25,13 +25,21 @@ class zbxgroup(core.zbx):
                             'internal'
                         ]
 
-        apicommands = {
+        self.apicommands = {
             "get": "hostgroup.get",
             "create": "hostgroup.create",
             "update": "hostgroup.update",
+            "delete": "hostgroup.delete",
         }
 
+        if groupmask:
+            self.merge(groupmask)
 
+
+    @property
+    def id(self):
+        return self.groupid
+    
     @property
     def groupid(self):
         return self.online_items.get('groupid', None)
@@ -48,6 +56,7 @@ class zbxgroup(core.zbx):
     @name.setter
     def name(self, value):
         self.online_items['name'] = str(value)
+        self.mergediff['name'] = str(value)
         
 
     @property
@@ -68,43 +77,34 @@ class zbxgroup(core.zbx):
         raise core.ReadOnlyField('internal is an readonly field')
 
 
-
-    def get(self, param_type='create'):
+    def get(self, param_type=None):
+        
+        if not param_type:
+            if self.id:
+                param_type = 'update'
+            else:
+                param_type = 'create'
+        
         if param_type == 'create':
             retval = dict(self.online_items)
+        
         if param_type == 'update':
+            if not self.id:
+                return False
             retval = dict(self.mergediff)
 
-        for param in retval.keys():
-            if param in self.readonlyfields:
-                if param_type == 'update' and param == 'groupid':
-                    continue
-                else:
-                    del retval[param]
+        if param_type == 'delete':
+            if self.id:
+                retval = [self.id]
+            else:
+                retval = list()
 
-        return retval
+        if param_type in ['create', 'update']:
+            for param in retval.keys():
+                if param in self.readonlyfields:
+                    if param_type == 'update' and param == 'groupid':
+                        continue
+                    else:
+                        del retval[param]
 
-
-
-    # def update(self):
-    #     self.get_query('hostgroup.get', filter={'name': self.objectname})
-
-
-    # def get_id(self):
-    #     return self.get_objectid('groupid')
-
-    # def get_name(self):
-    #     return self.objectname
-
-
-    # def create(self):
-    #     done = self.create_object('hostgroup.create', {"name": self.objectname})
-    #     if done:
-    #         self.update()
-    #     return self.get_id()
-
-
-    # def delete(self):
-    #     self.delete_object('hostgroup.delete', [self.get_id()])
-    #     self.update()
-
+        return [self.apicommands[param_type], retval]

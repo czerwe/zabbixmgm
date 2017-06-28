@@ -109,12 +109,11 @@ class zbx(object):
 
 
 
-    def merge(self, iface):
-        left, right, total = self.diff(iface)
+    def merge(self, dictionary):
+        left, right, total = self.diff(dictionary)
         self.mergediff = right
         for key in right.keys():
             self.online_items[key] = right[key]
-
 
     def get(self):
         return self.online_items
