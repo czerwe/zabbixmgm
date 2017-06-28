@@ -19,6 +19,12 @@ class zbxgroup(core.zbx):
                             'internal'
                         ]
 
+        self.readonlyfields = [
+                            'groupid',
+                            'flags',
+                            'internal'
+                        ]
+
         apicommands = {
             "get": "hostgroup.get",
             "create": "hostgroup.create",
@@ -63,8 +69,20 @@ class zbxgroup(core.zbx):
 
 
 
-    def get(self):
-        return self.online_items
+    def get(self, param_type='create'):
+        if param_type == 'create':
+            retval = dict(self.online_items)
+        if param_type == 'update':
+            retval = dict(self.mergediff)
+
+        for param in retval.keys():
+            if param in self.readonlyfields:
+                if param_type == 'update' and param == 'groupid':
+                    continue
+                else:
+                    del retval[param]
+
+        return retval
 
 
 

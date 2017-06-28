@@ -128,4 +128,25 @@ class group_tests(unittest2.TestCase):
         self.assertEqual(tgroup.internal, 1)
 
 
+    def test_group_create_dict(self):
+        tgroup = zabbixmgm.zbxgroup(self.apimock, 'mygroup')
+        
+        tgroup.online_items['internal'] = 1
+        cr = tgroup.get('create')
+        self.assertEqual(len(cr.keys()), 1)
+
+
+
+    def test_group_update_dict(self):
+        tgroup = zabbixmgm.zbxgroup(self.apimock, 'mygroup')
+        fakegroup = {'groupid': 30,'name':'blub', 'internal': 1}
+        tgroup.merge(fakegroup)
+        
+        cr = tgroup.get('update')
+        self.assertEqual(len(cr.keys()), 2)
+        self.assertTrue('groupid' in cr.keys())
+        self.assertTrue('name' in cr.keys())
+
+
+
 

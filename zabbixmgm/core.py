@@ -22,6 +22,7 @@ class zbx(object):
         self.online_items = dict()
         self.difffields = list()
         self.mergediff = dict()
+        self.readonlyfields = list()
 
     def get_objectid(self, idstring):
 
