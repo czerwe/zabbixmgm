@@ -81,7 +81,7 @@ class interface_tests(unittest2.TestCase):
         iface.main = 'yes'
         self.assertEqual(iface.online_items['main'], 1)
 
-        with self.assertRaises(zabbixmgm.interface.InvalidFieldValue):
+        with self.assertRaises(zabbixmgm.core.InvalidFieldValue):
             iface.main = 'blub'
         
 
@@ -118,7 +118,7 @@ class interface_tests(unittest2.TestCase):
         self.assertEqual(iface.online_items['type'], iface.type)
         self.assertEqual(type(iface.online_items['type']), int)
 
-        with self.assertRaises(zabbixmgm.interface.InvalidFieldValue):
+        with self.assertRaises(zabbixmgm.core.InvalidFieldValue):
             iface.type = '6'
         
 

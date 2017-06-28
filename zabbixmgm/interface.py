@@ -1,13 +1,6 @@
 import core
 import re
 
-
-
-class InvalidFieldValue(Exception):
-    def __init__(self, message, status=0):
-        super(InvalidFieldValue, self).__init__(message, status)
-
-
 class zbxinterface(core.zbx):
 
     TYPE_AGENT = 1
@@ -20,6 +13,7 @@ class zbxinterface(core.zbx):
 
     def __init__(self, api):
         super(zbxinterface, self).__init__(api)
+        self.difffields = ['interfaceid', 'useip', 'ip', 'dns', 'port', 'bulk', 'type']
         self.online_items = dict()
 
         self.main = 'no'
@@ -27,6 +21,7 @@ class zbxinterface(core.zbx):
         self.port = '10050'
         self.type = zbxinterface.TYPE_AGENT
         self.main = 0
+
 
 
     @property
@@ -68,7 +63,7 @@ class zbxinterface(core.zbx):
         elif value in [0, False, 'no']:
             self.online_items['main'] = 0
         else:
-            raise InvalidFieldValue(message='{0} not supported to set the main value'.format(value), status=2)
+            raise core.InvalidFieldValue(message='{0} not supported to set the main value'.format(value), status=2)
             
 
     @property
@@ -91,12 +86,12 @@ class zbxinterface(core.zbx):
         try:
             int(value)
         except:
-            raise InvalidFieldValue(message='{0} is not a supported interface type'.format(value), status=2)
+            raise core.InvalidFieldValue(message='{0} is not a supported interface type'.format(value), status=2)
         else:
             if int(value) in [zbxinterface.TYPE_AGENT, zbxinterface.TYPE_SNMP, zbxinterface.TYPE_IPMI, zbxinterface.TYPE_JMX]:
                 self.online_items['type'] = int(value)
             else:
-                raise InvalidFieldValue(message='{0} is not a supported interface type'.format(value), status=2)
+                raise core.InvalidFieldValue(message='{0} is not a supported interface type'.format(value), status=2)
 
     @property
     def bulk(self):
@@ -108,52 +103,7 @@ class zbxinterface(core.zbx):
         if value in [zbxinterface.BULK_ON, zbxinterface.BULK_OFF]:
             self.online_items['bulk'] = value
         else:
-            raise InvalidFieldValue(message='{0} is not a supported interface type'.format(value), status=2)
-
-
-    def diff(self, iface):
-        """
-        Searches differences between the current interface and an passed Interface.
-        It resturns three dictionaries. Fist dictionary is the current original values
-        The sedond dictironary is the passed values and the third contains only values that 
-        are only exist in either of the two dictionarys.
-        
-        :param iface: genertated interface dictionary
-        :type iface: dict
-        
-        :return: list of three dictionaries
-        :rtype: list
-        """
-        diff_full = dict()
-        diff_left = dict()
-        diff_right = dict()
-        
-        for indexname in ['interfaceid', 'useip', 'ip', 'dns', 'port', 'bulk', 'type']:
-            left = self.online_items.get(indexname, None)
-            right = iface.get(indexname, None)
-            if not left == right:
-                if left:
-                    diff_left[indexname] = self.online_items.get(indexname, '')
-                    if not right:
-                        diff_full[indexname] = self.online_items.get(indexname, '')
-
-                if right:
-                    diff_right[indexname] = iface.get(indexname, '')
-                    if not left:
-                        diff_full[indexname] = iface.get(indexname, '')
-
-        return [diff_left, diff_right, diff_full]
-
-
-
-    def merge(self, iface):
-        left, right, total = self.diff(iface)
-        for key in right.keys():
-            self.online_items[key] = right[key]
-
-
-    def get(self):
-        return self.online_items
+            raise core.InvalidFieldValue(message='{0} is not a supported interface type'.format(value), status=2)
 
 
     # def write(self):
