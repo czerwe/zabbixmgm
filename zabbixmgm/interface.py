@@ -26,7 +26,7 @@ class zbxinterface(core.zbx):
 
     @property
     def host(self):
-        print(self.online_items)
+        # print(self.online_items)
         if len(self.online_items['ip']) > 0:
             return self.online_items['ip']
 
@@ -105,6 +105,9 @@ class zbxinterface(core.zbx):
         else:
             raise core.InvalidFieldValue(message='{0} is not a supported interface type'.format(value), status=2)
 
+
+    def get(self):
+        return self.online_items
 
     # def write(self):
     #     inerfaceid = self.online_items.get('interfaceid', False)
