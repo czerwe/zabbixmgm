@@ -1,4 +1,5 @@
 import core
+from pprint import pprint
 
 class zbxgroup(core.zbx):
 
@@ -40,6 +41,20 @@ class zbxgroup(core.zbx):
     def id(self):
         return self.groupid
     
+    @property
+    def request_result(self):
+        return self.groupid
+    
+    @request_result.setter
+    def request_result(self, value):
+        result = value.get('result', {})
+        ids = result.get('groupids', [])
+        if len(ids) >= 1:
+            self.online_items['groupid'] = ids[0]
+
+
+
+
     @property
     def groupid(self):
         return self.online_items.get('groupid', None)

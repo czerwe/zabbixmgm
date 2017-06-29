@@ -1,4 +1,4 @@
-from core import zbxapplication
+from application import zbxapplication
 from group import zbxgroup
 from template import zbxtemplate
 from item import zbxitem

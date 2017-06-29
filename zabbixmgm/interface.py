@@ -35,6 +35,16 @@ class zbxinterface(core.zbx):
     def id(self):
         return self.interfaceid
 
+    @property
+    def request_result(self):
+        return self.interfaceid
+    
+    @request_result.setter
+    def request_result(self, value):
+        result = value.get('result', {})
+        ids = result.get('interfaceids', [])
+        if len(ids) >= 1:
+            self.online_items['interfaceids'] = ids[0]
 
     @property
     def interfaceid(self):
@@ -152,17 +162,3 @@ class zbxinterface(core.zbx):
                         del retval[param]
 
         return retval
-
-    # def write(self):
-    #     inerfaceid = self.online_items.get('interfaceid', False)
-    #     if not inerfaceid:
-    #         function = 'hostinterface.create'
-    #     else:
-    #         function = 'hostinterface.update'
-        
-    #     if self.get_interface().get('hostid', False):
-    #         result = self.api.do_request(function, self.get_interface())
-
-    #         if result['result'].get('interfaceids', None):
-    #             self.add_param('interfacid', result['result']['interfaceids'])
-            

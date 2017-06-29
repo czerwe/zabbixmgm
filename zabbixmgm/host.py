@@ -57,7 +57,7 @@ class zbxhost(core.zbx):
     STATUS_UNMONITORED = 1
 
 
-    def __init__(self, api, name):
+    def __init__(self, api, name, hostmask=None):
         super(zbxhost, self).__init__(api)
 
         self.host = name
@@ -137,9 +137,29 @@ class zbxhost(core.zbx):
                                 'snmp_errors_from',
                             ]
 
+
+
+        if hostmask:
+            self.merge(hostmask)
+
+
     @property
     def id(self):
         return self.hostid
+
+    @property
+    def request_result(self):
+        return self.hostid
+    
+    @request_result.setter
+    def request_result(self, value):
+        pprint(value)
+        result = value.get('result', {})
+        ids = result.get('hostids', [])
+        if len(ids) >= 1:
+            self.online_items['hostid'] = ids[0]
+
+
 
     @property
     def hostid(self):
@@ -490,50 +510,6 @@ class zbxhost(core.zbx):
         self.mergediff['tls_psk'] = value
 
 
-
-
-
-
-    # def get_hosts(self, filter=None):
-    #     if not filter:
-    #         host = self.api.do_request('host.get', {})
-    #     else:
-    #         host = self.api.do_request('host.get', {
-    #                           'selectGroups': "extend",
-    #                           'selectParentTemplates': ["name"],
-    #                           'filter': filter,
-    #                           'output': 'extend'
-    #                       })
-
-    #     if len(host['result']) > 0:
-    #         self.online_items = host['result'][0]
-    #     else:
-    #         self.online_items = dict()
-
-    #     if len(self.online_items.keys()) > 0:
-    #         interfaces = self.api.do_request('hostinterface.get', {
-    #                                         "output": "extend",
-    #                                         "hostids": self.get_id()
-    #                                     })
-    #         count = 0
-    #         for online_interface in interfaces['result']:
-    #             count = count + 1
-    #             interfaceinst = interface.zbxinterface(self.api, 'int{0}'.format(count))
-                
-    #             for intkey in online_interface.keys():
-    #                 if not intkey in ['hostid']:
-    #                     interfaceinst.add_param(intkey, online_interface[intkey])
-
-    #             interfaceinst.write()
-    #             self.add_interface(interfaceinst)
-
-
-    def update(self):
-        self.get_hosts(filter={'name': self.objectname})
-
-    def get_id(self):
-        return self.get_objectid('hostid')
-
     def add_interface(self, interface):
 
         tid, tidx = self.search_interface(host=interface.host, port=interface.port)
@@ -545,7 +521,7 @@ class zbxhost(core.zbx):
                 interface.main = 1
         
             self.interfaces[idx].append(interface)
-            interface.hostid = self.get_id()
+            interface.hostid = self.id
 
 
     def del_interface(self, tid, tidx):
@@ -609,11 +585,6 @@ class zbxhost(core.zbx):
             retval['groups'] = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
             retval['templates'] = [{"templateid": self.templates[templatename].id()} for templatename in self.templates]
 
-        if param_type == 'delete':
-            if self.id:
-                retval = [self.id]
-            else:
-                retval = list()
 
         if param_type in ['create', 'update']:
             for param in retval.keys():
@@ -622,5 +593,12 @@ class zbxhost(core.zbx):
                         continue
                     else:
                         del retval[param]
+        elif param_type == 'delete':
+            if self.id:
+                retval = [self.id]
+            else:
+                retval = list()
 
+        print param_type
+        print retval
         return [self.apicommands[param_type], retval]

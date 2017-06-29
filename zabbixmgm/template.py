@@ -1,86 +1,87 @@
 import core
-import item
+# import item
+import host
 
 from pprint import pprint
 
-class zbxtemplate(core.zbx):
+class zbxtemplate(host.zbxhost):
 
-    def __init__(self, api, templatename, groups, hosts=list()):
-        super(zbxtemplate, self).__init__(api)
-        self.objectname = templatename
-        self.groups = groups
-        self.hosts = hosts
+    def __init__(self, api, name, templatemask=None):
+        super(zbxtemplate, self).__init__(api, name)
+        self.name = name
+
+        self.difffields[self.difffields.index('hostid')] = 'templateid'
+        self.readonlyfields[self.readonlyfields.index('hostid')] = 'templateid'
+
+        pprint(self.difffields)
+        self.apicommands = {
+            "get": "template.get",
+            "create": "template.create",
+            "update": "template.update",
+            "delete": "template.delete",
+        }
+
+        if templatemask:
+            self.merge(templatemask)
+
+
+    @property
+    def id(self):
+        return self.templateid
+
+    @property
+    def hostid(self):
+        return self.templateid
+
+    @property
+    def request_result(self):
+        return self.groupid
+    
+    @request_result.setter
+    def request_result(self, value):
+        result = value.get('result', {})
+        ids = result.get('templateids', [])
+        if len(ids) >= 1:
+            self.online_items['templateid'] = ids[0]
+
+    @property
+    def templateid(self):
+        self.online_items.get('templateid', None)
+
+    @templateid.setter
+    def templateid(self):
+        raise core.ReadOnlyField('templateid is an readonly field')
+
+
+    def get(self, param_type=None):
         
-        self.items = dict()
-        self.applications = dict()
+        if not param_type:
+            if self.templateid:
+                param_type = 'update'
+            else:
+                param_type = 'create'
         
-        self.update()
-        self.create()
-
-    def update(self):
-        self.get_query('template.get', filter={'host': self.objectname})
-
-
-    def get_name(self):
-        return self.objectname
-
-    def get_id(self):
-        return self.get_objectid('templateid')
-
-
-    def create(self):
-
-        params = {
-                    'host': self.objectname, 
-                    'groups': dict(("groupid", group.get_id()) for group in self.groups), 
-                    'hosts': dict(("hostid", host.get_id()) for host in self.hosts)
-                }
-        self.create_object('template.create', params)
+        if param_type == 'create':
+            retval = dict(self.online_items)
         
-        for application in self.applications.keys():
-            self.applications[application].create()
+        if param_type == 'update':
+            if not self.templateid:
+                return False
+            retval = dict(self.mergediff)
 
-        for item in self.items.keys():
-            self.items[item].create()
+        if param_type == 'delete':
+            if self.id:
+                retval = [self.templateid]
+            else:
+                retval = list()
 
+        if param_type in ['create', 'update']:
+            for param in retval.keys():
+                if param in self.readonlyfields:
+                    if param_type == 'update' and param == 'templateid':
+                        continue
+                    else:
+                        del retval[param]
 
-        self.update()
-        return self.get_id()
+        return [self.apicommands[param_type], retval]
 
-
-    def delete(self):
-        for item in self.items.keys():
-            self.items[item].delete()
-
-        for application in self.applications.keys():
-            self.applications[application].delete()
-
-        self.delete_object('template.delete', [self.get_id()])
-
-
-    def create_application(self, applicationname):
-        self.create()
-        if not applicationname in self.applications:
-            self.applications[applicationname] = core.zbxapplication(self.api, applicationname=applicationname, hostid=self.get_id())
-        
-        self.create()
-        return self.applications[applicationname]
-
-
-
-
-
-    def create_item(self, itemname, applicationname):
-        self.create()
-        if not itemname in self.items:
-            self.items[itemname] = item.zbxitem(self.api, itemname=itemname, hostid=self.get_id())
-        
-        if applicationname in self.applications:
-            self.items[itemname].set_params('applications', [self.applications[applicationname].get_id()])
-        else:
-            #TODO
-            # error
-            print 'does nto exist'
-
-        self.create()
-        return self.items[itemname]
