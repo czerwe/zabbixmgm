@@ -1,6 +1,9 @@
+import sys
 import zabbixmgm
 from pprint import pprint
 from zabbix.api import ZabbixAPI
+
+
 
 zapi = ZabbixAPI(url='http://192.168.52.10:91', user='Admin', password='zabbix')
 
@@ -15,6 +18,10 @@ grp.request_result = zapi.do_request(cmd, param)
 hostname = '52n03.s52.local'
 host1_query = zabbixmgm.query_host_by_name(zapi, hostname)
 host1 = zabbixmgm.zbxhost(zapi, hostname, host1_query)
+
+res = zabbixmgm.query_interfaces_by_host(zapi, host1.id)
+pprint(res)
+sys.exit(0)
 
 
 if not host1.id:

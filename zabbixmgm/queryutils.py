@@ -62,6 +62,20 @@ def query_application_by_name(api, name):
 
 
 
+def query_interfaces_by_host(api, host):
+    params = {
+        'output': 'extend',
+        'hostids': host,
+    }
+
+    result = api.do_request('hostinterface.get', params)['result']
+    if len(result) >= 1:
+        return result
+    else:
+        return {}
+
+
+
 def query_item_by_name_and_host(api, name, host):
     params = {
         'output': 'extend',

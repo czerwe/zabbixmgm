@@ -507,6 +507,20 @@ class zbxhost(core.zbx):
         self.mergediff['tls_psk'] = value
 
 
+    def interface_inventory(self, interfaces):
+        for single_interface in interfaces:
+            tmpint = interface.zbxinterface(self.api, single_interface['name'], single_interface)
+            self.add_interface(tmpint)
+
+
+    def interface_mains(self):
+        for itype in self.interfaces.keys():
+            print [itype.main for ifac in self.interfaces[itype]]
+            # if not 1 in [itype.main for ifac in self.interfaces[itype]] and len(self.interfaces[itype]) >= 1:
+            #     self.interfaces[itype][0].main = 1
+
+
+
     def add_interface(self, interface):
 
         tid, tidx = self.search_interface(host=interface.host, port=interface.port)
@@ -515,10 +529,12 @@ class zbxhost(core.zbx):
         if not tid :
             if not self.interfaces.get(idx, False):
                 self.interfaces[idx] = list()
-                interface.main = 1
         
             self.interfaces[idx].append(interface)
             interface.hostid = self.id
+
+
+
 
 
     def del_interface(self, tid, tidx):
@@ -569,8 +585,7 @@ class zbxhost(core.zbx):
         if param_type == 'create':
             if self.id:
                 return [False, retval]
-            # pprint(self.templates['Template OS Linux'].get())
-            # pprint(self.templates['Template OS Linux'].online_items)
+            self.interface_mains()
             retval = dict(self.online_items)
             retval['interfaces'] = [interface_instance.get() for iftypeid in self.interfaces for interface_instance in self.interfaces[iftypeid]]
             retval['groups'] = [{"groupid": self.groups[groupname].id} for groupname in self.groups]

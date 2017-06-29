@@ -10,6 +10,8 @@ class application_tests(unittest2.TestCase):
     def setUp(self):
         self.apimock = Mock()
 
+        self.testhost = zabbixmgm.zbxhost(self.apimock, 'unithost', {"hostid": "12", 'name': 'unithost'})
+
 
     def tearDown(self):
         pass
@@ -46,10 +48,14 @@ class application_tests(unittest2.TestCase):
 
     def test_application_update_dict(self):
         tapplication = zabbixmgm.zbxapplication(self.apimock, 'mygroup')
+    
         fakegroup = {'applicationid': 356, 'name': "myblub"}
         tapplication.merge(fakegroup)
+        tapplication.add_host(self.testhost)
         
         create_command, cr = tapplication.get('update')
+        pprint(create_command)
+        pprint(cr)
         self.assertTrue(create_command == tapplication.apicommands['update'])
         self.assertEqual(create_command, 'application.update')
 
@@ -62,6 +68,7 @@ class application_tests(unittest2.TestCase):
         tapplication = zabbixmgm.zbxapplication(self.apimock, 'mygroup')
         fakegroup = {'applicationid': 30,'name':'blub'}
         tapplication.merge(fakegroup)
+        tapplication.add_host(self.testhost)
         
         create_command, cr = tapplication.get('delete')
         self.assertEqual(len(cr), 1)

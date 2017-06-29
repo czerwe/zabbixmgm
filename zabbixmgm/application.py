@@ -129,7 +129,11 @@ class zbxapplication(core.zbx):
                 retval = list()
 
         if param_type in ['create', 'update']:
+            if not self.host or self.host.id:
+                return [False, {}]
+            
             retval['hostid'] = self.host.id
+
             for param in retval.keys():
                 if param in self.readonlyfields:
                     if param_type == 'update' and param == 'applicationid':
