@@ -132,9 +132,8 @@ class zbxitem(core.zbx):
             'lastvalue',
             'prevvalue',
             'templateid',
-
+            'state'
         ]
-
 
         if itemmask:
             self.merge(itemmask)

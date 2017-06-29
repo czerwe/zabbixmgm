@@ -47,7 +47,6 @@ class zbxapplication(core.zbx):
     
     @request_result.setter
     def request_result(self, value):
-        pprint(value)
         result = value.get('result', {})
         ids = result.get('applicationids', [])
         if len(ids) >= 1:
@@ -128,10 +127,9 @@ class zbxapplication(core.zbx):
                 retval = [self.id]
             else:
                 retval = list()
-        pprint(retval)
+
         if param_type in ['create', 'update']:
             retval['hostid'] = self.host.id
-            pprint(retval)
             for param in retval.keys():
                 if param in self.readonlyfields:
                     if param_type == 'update' and param == 'applicationid':

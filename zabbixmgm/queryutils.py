@@ -59,3 +59,36 @@ def query_application_by_name(api, name):
         return result[0]
     else:
         return {}
+
+
+
+def query_item_by_name_and_host(api, name, host):
+    params = {
+        'output': 'extend',
+        'filter': {
+            'name': [name],
+            'hosts': [host]
+        },
+    }
+
+    result = api.do_request('item.get', params)['result']
+    if len(result) >= 1:
+        return result[0]
+    else:
+        return {}
+
+
+
+def query_items_from_host(api, host):
+    params = {
+        'output': 'extend',
+        'filter': {
+            'hosts': [host]
+        },
+    }
+
+    result = api.do_request('item.get', params)['result']
+    if len(result) >= 1:
+        return result[0]
+    else:
+        return {}
