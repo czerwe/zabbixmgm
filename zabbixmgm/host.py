@@ -153,7 +153,6 @@ class zbxhost(core.zbx):
     
     @request_result.setter
     def request_result(self, value):
-        pprint(value)
         result = value.get('result', {})
         ids = result.get('hostids', [])
         if len(ids) >= 1:

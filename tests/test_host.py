@@ -56,7 +56,6 @@ class host_tests(unittest2.TestCase):
         thost.add_interface(iface1)
         thost.add_interface(iface2)
         create_command, create_params = thost.get('create')
-        pprint(create_params)
 
         self.assertEqual(create_params['host'], 'mytesthost.local')
         self.assertEqual(len(create_params['interfaces']), 2)

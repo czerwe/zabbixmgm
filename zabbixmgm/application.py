@@ -109,10 +109,8 @@ class zbxapplication(core.zbx):
 
         if param_type == 'delete':
             if self.id:
-                print('no missing_id')
                 retval = [self.id]
             else:
-                print('missing_id')
                 retval = list()
 
         if param_type in ['create', 'update']:
