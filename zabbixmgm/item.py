@@ -65,7 +65,8 @@ class zbxitem(core.zbx):
         super(zbxitem, self).__init__(api)
 
         self.name = name
-        
+        self.applications = dict()
+        self.host = None
 
 
         self.apicommands = {
@@ -141,11 +142,11 @@ class zbxitem(core.zbx):
 
     @property
     def id(self):
-        return self.hostid
+        return self.itemid
 
     @property
     def request_result(self):
-        return self.hostid
+        return self.itemid
     
     @request_result.setter
     def request_result(self, value):
@@ -617,6 +618,15 @@ class zbxitem(core.zbx):
         
 
 
+    def add_host(self, host):
+        self.host = host
+
+    def add_application(self, application):
+        self.applications[application.name] = application
+
+
+
+
     def get(self, param_type=None):
         
         if not param_type:
@@ -643,6 +653,8 @@ class zbxitem(core.zbx):
                 retval = list()
 
         if param_type in ['create', 'update']:
+            retval['hostid'] = self.host.id
+            retval['applications'] = [self.applications[applicationname].id for applicationname in self.applications]
             for param in retval.keys():
                 if param in self.readonlyfields:
                     if param_type == 'update' and param == 'itemid':

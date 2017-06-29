@@ -19,6 +19,7 @@ def query_host_by_name(api, name):
     params = {
         'output': 'extend',
         'selectGroups': ["name"],
+        'selectInterfaces': ["name"],
         'selectParentTemplates': ["name"],
         'filter': {
             'name': [name]
@@ -40,6 +41,20 @@ def query_template_by_name(api, name):
     }
     
     result = api.do_request('template.get', params)['result']
+    if len(result) >= 1:
+        return result[0]
+    else:
+        return {}
+
+def query_application_by_name(api, name):
+    params = {
+        'output': 'extend',
+        'filter': {
+            'name': [name]
+        }
+    }
+    
+    result = api.do_request('application.get', params)['result']
     if len(result) >= 1:
         return result[0]
     else:

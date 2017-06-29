@@ -569,11 +569,12 @@ class zbxhost(core.zbx):
         if param_type == 'create':
             if self.id:
                 return [False, retval]
-
+            # pprint(self.templates['Template OS Linux'].get())
+            # pprint(self.templates['Template OS Linux'].online_items)
             retval = dict(self.online_items)
             retval['interfaces'] = [interface_instance.get() for iftypeid in self.interfaces for interface_instance in self.interfaces[iftypeid]]
             retval['groups'] = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
-            retval['templates'] = [{"templateid": self.templates[templatename].id()} for templatename in self.templates]
+            retval['templates'] = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
 
         if param_type == 'update':
             if not self.id:
@@ -581,7 +582,7 @@ class zbxhost(core.zbx):
             retval = dict(self.mergediff)
             retval['hostid'] = self.id
             retval['groups'] = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
-            retval['templates'] = [{"templateid": self.templates[templatename].id()} for templatename in self.templates]
+            retval['templates'] = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
 
 
         if param_type in ['create', 'update']:

@@ -10,6 +10,7 @@ class zbxapplication(core.zbx):
     def __init__(self, api, name, applicationmask=None):
         super(zbxapplication, self).__init__(api)
         self.name = name
+        self.host = None
 
         self.difffields = [
                             'applicationid',
@@ -21,7 +22,6 @@ class zbxapplication(core.zbx):
 
         self.readonlyfields = [
                             'applicationid',
-                            'hostid',
                             'flags',
                             'templateids'
                         ]
@@ -47,6 +47,7 @@ class zbxapplication(core.zbx):
     
     @request_result.setter
     def request_result(self, value):
+        pprint(value)
         result = value.get('result', {})
         ids = result.get('applicationids', [])
         if len(ids) >= 1:
@@ -71,6 +72,16 @@ class zbxapplication(core.zbx):
 
 
     @property
+    def name(self):
+        return self.online_items.get('name', None)
+
+    @name.setter
+    def name(self, value):
+        self.online_items['name'] = str(value)
+        self.mergediff['name'] = str(value)
+
+
+    @property
     def flags(self):
         return self.online_items.get('flags', zbxapplication.FLAGS_PLAIN)
 
@@ -88,8 +99,12 @@ class zbxapplication(core.zbx):
         raise core.ReadOnlyField('templateids is an readonly field')
 
 
+
+    def add_host(self, host):
+        self.host = host
+
+
     def get(self, param_type=None):
-        
         if not param_type:
             if self.id:
                 param_type = 'update'
@@ -104,6 +119,7 @@ class zbxapplication(core.zbx):
         if param_type == 'update':
             if not self.id:
                 return [False, {}]
+
             retval = dict(self.mergediff)
             retval['applicationid'] = self.id
 
@@ -112,8 +128,10 @@ class zbxapplication(core.zbx):
                 retval = [self.id]
             else:
                 retval = list()
-
+        pprint(retval)
         if param_type in ['create', 'update']:
+            retval['hostid'] = self.host.id
+            pprint(retval)
             for param in retval.keys():
                 if param in self.readonlyfields:
                     if param_type == 'update' and param == 'applicationid':
