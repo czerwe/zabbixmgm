@@ -255,7 +255,49 @@ class host_tests(unittest2.TestCase):
         self.assertEqual(len(create_params['interfaces']), 2)
 
 
+    def test_host_load_response(self):
+        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local')
+        self.assertEqual(thost.id, None)
+        fakeresponse = {
+                        "jsonrpc": "2.0",
+                        "result": {
+                            "hostids": [
+                                "107819"
+                            ]
+                        },
+                        "id": 1
+                    }
+        thost.request_result = fakeresponse
+        self.assertEqual(thost.id, '107819')
 
 
 
+    def test_host_get_create(self):
+        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local')
+        command, param = thost.get()
+        self.assertEqual(thost.apicommands['create'], command)
 
+
+
+    def test_host_get_update(self):
+        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local')
+        command, param = thost.get('update')
+        self.assertFalse(command)
+
+        fakeresponse = {
+                        "jsonrpc": "2.0",
+                        "result": {
+                            "hostids": [
+                                "107819"
+                            ]
+                        },
+                        "id": 1
+                    }
+        thost.request_result = fakeresponse
+        self.assertEqual(thost.id, '107819')
+        command, param = thost.get()
+        self.assertEqual(thost.apicommands['update'], command)
+        self.assertEqual(param['hostid'], '107819')
+        
+        command, param = thost.get('create')
+        self.assertFalse(command)

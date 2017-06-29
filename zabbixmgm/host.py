@@ -159,8 +159,6 @@ class zbxhost(core.zbx):
         if len(ids) >= 1:
             self.online_items['hostid'] = ids[0]
 
-
-
     @property
     def hostid(self):
         return self.online_items.get('hostid', None)
@@ -561,7 +559,7 @@ class zbxhost(core.zbx):
         self.templates[template.name] = template
 
     def get(self, param_type=None):
-
+        retval = dict()
         if not param_type:
             if self.id:
                 param_type = 'update'
@@ -571,7 +569,7 @@ class zbxhost(core.zbx):
 
         if param_type == 'create':
             if self.id:
-                return False
+                return [False, retval]
 
             retval = dict(self.online_items)
             retval['interfaces'] = [interface_instance.get() for iftypeid in self.interfaces for interface_instance in self.interfaces[iftypeid]]
@@ -580,8 +578,9 @@ class zbxhost(core.zbx):
 
         if param_type == 'update':
             if not self.id:
-                return False
+                return [False, retval]
             retval = dict(self.mergediff)
+            retval['hostid'] = self.id
             retval['groups'] = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
             retval['templates'] = [{"templateid": self.templates[templatename].id()} for templatename in self.templates]
 
@@ -599,6 +598,4 @@ class zbxhost(core.zbx):
             else:
                 retval = list()
 
-        print param_type
-        print retval
         return [self.apicommands[param_type], retval]

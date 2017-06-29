@@ -101,12 +101,15 @@ class zbxgroup(core.zbx):
                 param_type = 'create'
         
         if param_type == 'create':
+            if self.id:
+                return [False, {}]
             retval = dict(self.online_items)
         
         if param_type == 'update':
             if not self.id:
-                return False
+                return [False, {}]
             retval = dict(self.mergediff)
+            retval['groupid'] = self.id
 
         if param_type == 'delete':
             if self.id:
