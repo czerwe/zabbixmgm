@@ -54,7 +54,7 @@ class application_tests(unittest2.TestCase):
         self.assertEqual(create_command, 'application.update')
 
         self.assertEqual(len(cr.keys()), 2)
-        self.assertTrue('groupid' in cr.keys())
+        self.assertTrue('applicationid' in cr.keys())
         self.assertTrue('name' in cr.keys())
 
 

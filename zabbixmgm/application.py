@@ -105,7 +105,7 @@ class zbxapplication(core.zbx):
             if not self.id:
                 return [False, {}]
             retval = dict(self.mergediff)
-            retval['groupid'] = self.id
+            retval['applicationid'] = self.id
 
         if param_type == 'delete':
             if self.id:
@@ -116,7 +116,7 @@ class zbxapplication(core.zbx):
         if param_type in ['create', 'update']:
             for param in retval.keys():
                 if param in self.readonlyfields:
-                    if param_type == 'update' and param == 'groupid':
+                    if param_type == 'update' and param == 'applicationid':
                         continue
                     else:
                         del retval[param]
