@@ -24,19 +24,30 @@ class zbxinterface(core.zbx):
 
         self.difffields = [
                             'interfaceid',
-                            'hostid',
                             'dns',
+                            'hostid',
                             'ip',
+                            'main',
+                            'port',
+                            'type',
+                            'useip',
                             'bulk',
-                            'useip'
                         ]
 
         self.readonlyfields = [
                             'interfaceid',
-                            'flags',
-                            'main',
-                            'internal'
                         ]
+
+        
+        self.required_fields = [
+                            'dns',
+                            'hostid',
+                            'ip',
+                            'main',
+                            'port',
+                            'type',
+                            'useip',
+                                ]
 
         self.apicommands = {
             "get": "hostinterface.get",
@@ -212,42 +223,3 @@ class zbxinterface(core.zbx):
                         del retval[param]
 
         return [self.apicommands[param_type], retval]
-
-
-
-    def diff(self, iface):
-        """
-        Searches differences between the current zbxdata and an passed zbxdata.
-        It resturns three dictionaries. Fist dictionary is the current original values
-        The sedond dictironary is the passed values and the third contains only values that 
-        are only exist in either of the two dictionarys.
-        
-        :param iface: genertated interface dictionary
-        :type iface: dict
-        
-        :return: list of three dictionaries
-        :rtype: list
-        """
-        from pprint import pprint
-        diff_full = dict()
-        diff_left = dict()
-        diff_right = dict()
-        print '888888888888888888888'
-        pprint(iface)
-        print '888888888888888888888'
-        for indexname in self.difffields:
-            left = self.online_items.get(indexname, None)
-            right = iface.get(indexname, None)
-            if not left == right:
-                if left:
-                    diff_left[indexname] = self.online_items.get(indexname, '')
-                    if not right:
-                        diff_full[indexname] = self.online_items.get(indexname, '')
-
-                if right:
-                    diff_right[indexname] = iface.get(indexname, '')
-                    if not left:
-                        diff_full[indexname] = iface.get(indexname, '')
-
-        return [diff_left, diff_right, diff_full]
-

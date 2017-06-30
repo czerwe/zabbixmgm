@@ -28,7 +28,7 @@ class zbx(object):
         self.difffields = list()
         self.mergediff = dict()
         self.readonlyfields = list()
-
+        self.required_fields = list()
 
     def diff(self, iface):
         """

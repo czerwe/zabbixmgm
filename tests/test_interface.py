@@ -123,31 +123,33 @@ class interface_tests(unittest2.TestCase):
         
 
 
-    # def test_intf_diff_simle(self):
-    #     iface = zabbixmgm.zbxinterface(self.apimock)
-    #     iface2 = zabbixmgm.zbxinterface(self.apimock)
-    #     iface2.port = 1234
+    def test_intf_diff_simle(self):
+        iface = zabbixmgm.zbxinterface(self.apimock)
+        iface2 = zabbixmgm.zbxinterface(self.apimock)
+        iface2.port = 1234
 
-    #     left, right, total = iface.diff(iface2.get())
-    #     self.assertEqual(left['port'], '10050')
-    #     self.assertEqual(right['port'], '1234')
+        command, param = iface2.get()
+        left, right, total = iface.diff(param)
+        self.assertEqual(left['port'], '10050')
+        self.assertEqual(right['port'], '1234')
 
 
-    # def test_intf_diff_complex(self):
-    #     iface1 = zabbixmgm.zbxinterface(self.apimock)
-    #     iface2 = zabbixmgm.zbxinterface(self.apimock)
-    #     iface1.port = 5432
-    #     iface2.port = 1234
-    #     iface2.bulk = 1
+    def test_intf_diff_complex(self):
+        iface1 = zabbixmgm.zbxinterface(self.apimock)
+        iface2 = zabbixmgm.zbxinterface(self.apimock)
+        iface1.port = 5432
+        iface2.port = 1234
+        iface2.bulk = 1
 
-    #     iface2.main = 0
+        iface2.main = 0
 
-    #     left, right, total = iface1.diff(iface2.get())
-    #     # pprint(iface1.diff(iface2.get()))
-    #     self.assertEqual(left['port'], '5432')
-    #     self.assertEqual(right['port'], '1234')
-    #     self.assertEqual(right['bulk'], 1)
-    #     self.assertEqual(total['bulk'], 1)
+        command, param = iface2.get()
+        left, right, total = iface1.diff(param)
+        # pprint(iface1.diff(iface2.get()))
+        self.assertEqual(left['port'], '5432')
+        self.assertEqual(right['port'], '1234')
+        self.assertEqual(right['bulk'], 1)
+        self.assertEqual(total['bulk'], 1)
 
 
 
@@ -156,21 +158,17 @@ class interface_tests(unittest2.TestCase):
         iface2 = zabbixmgm.zbxinterface(self.apimock)
         iface2.port = 1234
 
-        command, param = iface.get()
-        pprint(param)
         command, param = iface2.get()
-        pprint(param)
         left, right, total = iface.diff(param)
-        pprint(iface.diff(param))
         self.assertEqual(left['port'], '10050')
         self.assertEqual(right['port'], '1234')
 
-        # iface.merge(iface2.get()[1])
-        # left, right, total = iface.diff(iface2.get()[1])
+        iface.merge(iface2.get()[1])
+        left, right, total = iface.diff(iface2.get()[1])
 
-        # self.assertEqual(len(left.keys()), 0)
-        # self.assertEqual(len(right.keys()), 0)
-        # self.assertEqual(len(total.keys()), 0)
+        self.assertEqual(len(left.keys()), 0)
+        self.assertEqual(len(right.keys()), 0)
+        self.assertEqual(len(total.keys()), 0)
 
 
 

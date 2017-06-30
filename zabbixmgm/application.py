@@ -12,30 +12,20 @@ class zbxapplication(core.zbx):
         self.name = name
         self.host = None
 
-        self.difffields = [
-                            'applicationid',
-                            'hostid',
-                            'flags',
-                            'name',
-                            'templateids'
-                        ]
+        self.difffields = ['applicationid',
+                           'hostid',
+                           'flags',
+                           'name',
+                           'templateids']
 
-        self.readonlyfields = [
-                            'applicationid',
-                            'flags',
-                            'templateids'
-                        ]
-
-        self.required_fields = [
-                            'name',
-                            'hostid'
-                                ]
+        self.readonlyfields = ['applicationid', 'flags', 'templateids']
+        self.required_fields = ['hostid', 'name']
 
         self.apicommands = {
-            "get": "application.get",
-            "create": "application.create",
-            "update": "application.update",
-            "delete": "application.delete",
+            'get': 'application.get',
+            'create': 'application.create',
+            'update': 'application.update',
+            'delete': 'application.delete',
         }
 
         if applicationmask:
@@ -109,16 +99,14 @@ class zbxapplication(core.zbx):
 
 
     def get(self, param_type=None):
-
         if not param_type:
             if self.id:
                 param_type = 'update'
             else:
                 param_type = 'create'
 
-
         if param_type in ['create', 'update']:
-
+            
             if param_type == 'create':
                 if self.id:
                     return [False, {}]
@@ -145,14 +133,10 @@ class zbxapplication(core.zbx):
                     else:
                         del retval[param]
 
-
         elif param_type == 'delete':
             if self.id:
                 retval = [self.id]
             else:
                 retval = list()
-
-
-
 
         return [self.apicommands[param_type], retval]
