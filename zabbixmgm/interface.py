@@ -16,10 +16,18 @@ class zbxinterface(core.zbx):
         self.difffields = ['interfaceid', 'useip', 'ip', 'dns', 'port', 'bulk', 'type']
 
         self.readonlyfields = ['interfaceid']
-        self.online_items = dict()
+        self.online_items = {'ip': '', 'dns': ''}
         
+        # setting some defaults
+        self.main = 'no'
+        self.port = '10050'
+        self.type = zbxinterface.TYPE_AGENT
+        self.main = 0
+
         if interfacemask:
             self.merge(interfacemask)
+        else:    
+            self.host = '127.0.0.1'
         
         self.difffields = [
                             'interfaceid',
@@ -56,11 +64,7 @@ class zbxinterface(core.zbx):
             'hostcreate': ''
         }
 
-        self.main = 'no'
-        self.host = '127.0.0.1'
-        self.port = '10050'
-        self.type = zbxinterface.TYPE_AGENT
-        self.main = 0
+
 
     @property
     def id(self):
@@ -88,7 +92,6 @@ class zbxinterface(core.zbx):
 
     @property
     def host(self):
-        # print(self.online_items)
         if len(self.online_items['ip']) > 0:
             return self.online_items['ip']
 
@@ -145,7 +148,7 @@ class zbxinterface(core.zbx):
     @hostid.setter
     def hostid(self, value):
         self.online_items['hostid'] = str(value) 
-
+        
 
     @property
     def type(self):
@@ -195,7 +198,8 @@ class zbxinterface(core.zbx):
                 if not self.id:
                     raise core.MissingField('id field is missing', '4')
                     
-                retval = dict(self.mergediff)
+                retval = dict(self.online_items)
+                # retval = dict(self.mergediff)
                 retval['interfaceid'] = self.id
 
 

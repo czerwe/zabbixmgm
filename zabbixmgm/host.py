@@ -522,11 +522,10 @@ class zbxhost(core.zbx):
 
     def add_interface(self, interface):
         tid, tidx = self.search_interface(host=interface.host, port=interface.port)
-
-
-
+        # pprint([tid, tidx])
         idx = interface.type
         if not tid :
+            # pprint(interface.get('hostcreate'))
             if not self.interfaces.get(idx, False):
                 self.interfaces[idx] = list()
         
@@ -598,10 +597,9 @@ class zbxhost(core.zbx):
                 return [False, retval]
             retval = dict(self.mergediff)
             retval['hostid'] = self.id
+            retval['interfaces'] = [{"interfaceid": interface_instance.id} for iftypeid in self.interfaces for interface_instance in self.interfaces[iftypeid]]
             retval['groups'] = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
             retval['templates'] = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
-
-
 
 
         if param_type in ['create', 'update']:
@@ -618,5 +616,5 @@ class zbxhost(core.zbx):
                 retval = [self.id]
             else:
                 retval = list()
-                
+
         return [self.apicommands[param_type], retval]

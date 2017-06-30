@@ -5,8 +5,8 @@ from zabbix.api import ZabbixAPI
 
 
 
-zapi = ZabbixAPI(url='http://localhost', user='Admin', password='zabbix')
-# zapi = ZabbixAPI(url='http://192.168.52.10:91', user='Admin', password='zabbix')
+# zapi = ZabbixAPI(url='http://localhost', user='Admin', password='zabbix')
+zapi = ZabbixAPI(url='http://192.168.52.10:91', user='Admin', password='zabbix')
 
 
 # Create Groups
@@ -36,17 +36,32 @@ if not host1.id:
     host1_inf2.port = '40001'
     host1_inf2.type = zabbixmgm.zbxinterface.TYPE_JMX
     host1.add_interface(host1_inf2)
+else:
+    for interface in host1_query.get('interfaces', {}):
+        sub_interface = zabbixmgm.query_interfaces_by_id(zapi, interface['interfaceid'])
+        partinterface = zabbixmgm.zbxinterface(zapi, interfacemask=sub_interface)
+        print 'add INTERFACE'
+        host1.add_interface(partinterface)
+
+    host1_inf2_query = zabbixmgm.query_interfaces_by_id(zapi, interface['interfaceid'])
+    host1_inf2 = zabbixmgm.zbxinterface(zapi, host1_inf2_query)
+    host1_inf2.hostid = host1.id
+    host1_inf2.main = 1
+    pprint(host1_inf2.hostid)
+    # host1_inf2.port = '40001'
+    # host1_inf2.type = zabbixmgm.zbxinterface.TYPE_JMX
+    print 'add INTERFACE'
+    cmd, param = host1_inf2.get()
+
+    host1_inf2.request_result = zapi.do_request(cmd, param)
+    host1.add_interface(host1_inf2)
+    
 
 for group in host1_query.get('groups', {}):
     sub_group = zabbixmgm.query_group_by_name(zapi, group['name'])
     partgroup = zabbixmgm.zbxgroup(zapi, group['name'], groupmask=zabbixmgm.query_group_by_name(zapi, group['name']))
     host1.add_group(partgroup)
 
-# pprint(host1_query)
-for interface in host1_query.get('interfaces', {}):
-    sub_interface = zabbixmgm.query_interfaces_by_id(zapi, interface['interfaceid'])
-    partinterface = zabbixmgm.zbxinterface(zapi, interfacemask=zabbixmgm.query_group_by_name(zapi, group['name']))
-    host1.add_interface(partinterface)
 
 pprint(host1.online_items)
 pprint(host1.interfaces)
@@ -66,12 +81,11 @@ tpl_blub.request_result = zapi.do_request(cmd, param)
 
 
 # host1.add_template(tpl_oslinux)
-host1.add_template(tpl_blub)
-
+# host1.add_template(tpl_blub)
 cmd, param = host1.get()
 host1.request_result = zapi.do_request(cmd, param)
 
-
+sys.exit(0)
 app_name = 'blubapp'
 app_response = zabbixmgm.query_application_by_name(zapi, app_name)
 app_blub = zabbixmgm.zbxapplication(zapi, app_name, app_response)

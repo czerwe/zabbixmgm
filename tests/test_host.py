@@ -6,6 +6,53 @@ from mock import Mock, call
 from pprint import pprint
 
 
+
+host_search_response = {
+ u'available': u'0',
+ u'groups': [{u'groupid': u'32', u'name': u'autogroup'}],
+ u'host': u'52n03.s52.local',
+ u'hostid': u'10142',
+ u'interfaces': [{u'interfaceid': u'38'}],
+ u'name': u'52n03.s52.local',
+ u'parentTemplates': [],
+ u'status': u'0'}
+
+inf38_response = {u'bulk': u'1',
+ u'dns': u'',
+ u'hostid': u'10142',
+ u'interfaceid': u'38',
+ u'ip': u'127.0.0.1',
+ u'main': u'1',
+ u'port': u'10050',
+ u'type': u'1',
+ u'useip': u'1'}
+
+inf39_response = {u'bulk': u'1',
+ u'dns': u'',
+ u'hostid': u'10142',
+ u'interfaceid': u'39',
+ u'ip': u'127.0.0.1',
+ u'main': u'1',
+ u'port': u'10051',
+ u'type': u'4',
+ u'useip': u'1'
+}
+
+inf40_response = {u'bulk': u'1',
+ u'dns': u'',
+ u'hostid': u'10142',
+ u'interfaceid': u'40',
+ u'ip': u'127.0.0.1',
+ u'main': u'0',
+ u'port': u'10053',
+ u'type': u'4',
+ u'useip': u'1'
+}
+
+
+
+
+
 class host_tests(unittest2.TestCase):
 
     def setUp(self):
@@ -300,3 +347,213 @@ class host_tests(unittest2.TestCase):
         
         command, param = thost.get('create')
         self.assertFalse(command)
+
+
+
+    def test_host_interface_upon_creation_1inf(self):
+        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local')
+        command, param = thost.get()
+        self.assertEqual(command, 'host.create')
+        self.assertEqual(command, thost.apicommands['create'])
+        self.assertTrue('interfaces' in param.keys())
+        self.assertTrue(len(param['interfaces']) == 0, 'interface should be empty but isn\'t')
+
+
+        tinterface1 = zabbixmgm.zbxinterface(self.apimock)
+        tinterface1.host = thost.name
+        thost.add_interface(tinterface1)
+        command, param = thost.get()
+        self.assertEqual(command, 'host.create')
+        self.assertEqual(command, thost.apicommands['create'])
+        self.assertTrue('interfaces' in param.keys())
+        self.assertEqual(len(param['interfaces']), 1, 'interface should be filled with just 1')
+        
+        interface = param['interfaces'][0]
+
+        self.assertEqual(interface['main'], 1, 'main should be one, it is set automatically')
+        self.assertEqual(interface['dns'], 'mytesthost.local')
+        self.assertFalse('hostid' == interface.keys())
+        self.assertFalse('interfaceid' == interface.keys())
+
+
+    def test_host_interface_upon_creation_2inf_same_type(self):
+        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local')
+        command, param = thost.get()
+        self.assertEqual(command, 'host.create')
+        self.assertEqual(command, thost.apicommands['create'])
+        self.assertTrue('interfaces' in param.keys())
+        self.assertTrue(len(param['interfaces']) == 0, 'interface should be empty but isn\'t')
+
+
+        tinterface1 = zabbixmgm.zbxinterface(self.apimock)
+        tinterface1.host = thost.name
+        thost.add_interface(tinterface1)
+        command, param = thost.get()
+        self.assertEqual(command, 'host.create')
+        self.assertEqual(command, thost.apicommands['create'])
+        self.assertTrue('interfaces' in param.keys())
+        self.assertEqual(len(param['interfaces']), 1, 'interface should be filled with just 1')
+        
+        interface = param['interfaces'][0]
+
+        self.assertEqual(interface['main'], 1, 'main should be one, it is set automatically')
+        self.assertEqual(interface['dns'], 'mytesthost.local')
+        
+        tinterface2 = zabbixmgm.zbxinterface(self.apimock)
+        tinterface2.host = thost.name
+        tinterface2.port = '1110'
+        thost.add_interface(tinterface2)
+        command, param = thost.get()
+
+        self.assertEqual(len(param['interfaces']), 2, 'interface should be filled with 2')
+        
+        interface = param['interfaces'][0]
+
+        self.assertEqual(interface['main'], 1, 'main should be one, it is set automatically')
+        self.assertEqual(interface['dns'], 'mytesthost.local')
+        self.assertEqual(interface['port'], '10050')
+        self.assertEqual(interface['type'], zabbixmgm.zbxinterface.TYPE_AGENT)
+
+        interface = param['interfaces'][1]
+
+        self.assertEqual(interface['main'], 0, 'main should be one, it is set automatically')
+        self.assertEqual(interface['dns'], 'mytesthost.local')
+        self.assertEqual(interface['port'], '1110')
+        self.assertEqual(interface['type'], zabbixmgm.zbxinterface.TYPE_AGENT)
+
+
+    def test_host_interface_upon_creation_2inf_diff_type(self):
+        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local')
+        command, param = thost.get()
+        self.assertEqual(command, 'host.create')
+        self.assertEqual(command, thost.apicommands['create'])
+        self.assertTrue('interfaces' in param.keys())
+        self.assertTrue(len(param['interfaces']) == 0, 'interface should be empty but isn\'t')
+
+
+        tinterface1 = zabbixmgm.zbxinterface(self.apimock)
+        tinterface1.host = thost.name
+        thost.add_interface(tinterface1)
+        command, param = thost.get()
+        self.assertEqual(command, 'host.create')
+        self.assertEqual(command, thost.apicommands['create'])
+        self.assertTrue('interfaces' in param.keys())
+        self.assertEqual(len(param['interfaces']), 1, 'interface should be filled with just 1')
+        
+        interface = param['interfaces'][0]
+
+        self.assertEqual(interface['main'], 1, 'main should be one, it is set automatically')
+        self.assertEqual(interface['dns'], 'mytesthost.local')
+        
+        tinterface2 = zabbixmgm.zbxinterface(self.apimock)
+        tinterface2.host = thost.name
+        tinterface2.port = '4002'
+        tinterface2.type = zabbixmgm.zbxinterface.TYPE_JMX
+        thost.add_interface(tinterface2)
+        command, param = thost.get()
+
+        self.assertEqual(interface['main'], 1, 'main should be one, it is set automatically')
+        self.assertEqual(interface['dns'], 'mytesthost.local')
+        self.assertEqual(interface['port'], '10050')
+        self.assertEqual(interface['type'], zabbixmgm.zbxinterface.TYPE_AGENT)
+
+        interface = param['interfaces'][1]
+
+        self.assertEqual(interface['main'], 1, 'main should be one, it is set automatically')
+        self.assertEqual(interface['dns'], 'mytesthost.local')
+        self.assertEqual(interface['port'], '4002')
+        self.assertEqual(interface['type'], zabbixmgm.zbxinterface.TYPE_JMX)
+
+
+    def test_host_interface_upon_update_1inf(self):
+
+        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local', host_search_response)
+        command, param = thost.get()
+        self.assertEqual(command, 'host.update')
+        self.assertTrue('hostid' in param.keys())
+        self.assertEqual(param['hostid'], '10142')
+        self.assertEqual(command, thost.apicommands['update'])
+        self.assertTrue('interfaces' in param.keys())
+        self.assertTrue(len(param['interfaces']) == 0, 'interface should be empty but isn\'t')
+        
+        inf38 = zabbixmgm.zbxinterface(self.apimock, inf38_response)
+        thost.add_interface(inf38)
+        command, param = thost.get()
+
+        self.assertTrue('interfaces' in param.keys())
+        self.assertEqual(len(param['interfaces']), 1, 'interface should be 1 but isn\'t')
+        self.assertTrue({'interfaceid': '38'} in param['interfaces'], 'Wrong interface listed')
+
+
+    def test_host_interface_upon_update_2inf(self):
+
+        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local', host_search_response)
+        command, param = thost.get()
+        self.assertEqual(command, 'host.update')
+        self.assertTrue('hostid' in param.keys())
+        self.assertEqual(param['hostid'], '10142')
+        self.assertEqual(command, thost.apicommands['update'])
+        self.assertTrue('interfaces' in param.keys())
+        self.assertTrue(len(param['interfaces']) == 0, 'interface should be empty but isn\'t')
+        
+        inf38 = zabbixmgm.zbxinterface(self.apimock, inf38_response)
+        thost.add_interface(inf38)
+        command, param = thost.get()
+
+        self.assertTrue('interfaces' in param.keys())
+        self.assertEqual(len(param['interfaces']), 1, 'interface should be 1 but isn\'t')
+        self.assertTrue({'interfaceid': '38'} in param['interfaces'], 'Wrong interface listed')
+
+
+        inf39 = zabbixmgm.zbxinterface(self.apimock, inf39_response)
+        thost.add_interface(inf39)
+        command, param = thost.get()
+
+        self.assertTrue('interfaces' in param.keys())
+        self.assertEqual(len(param['interfaces']), 2, 'interface should be 2 but isn\'t')
+        self.assertTrue({'interfaceid': '38'} in param['interfaces'], 'interface 38 not listed')
+        self.assertTrue({'interfaceid': '39'} in param['interfaces'], 'interface 39 not listed')
+
+
+
+
+    def test_host_interface_upon_update_3inf_onesametype(self):
+
+        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local', host_search_response)
+        command, param = thost.get()
+        self.assertEqual(command, 'host.update')
+        self.assertTrue('hostid' in param.keys())
+        self.assertEqual(param['hostid'], '10142')
+        self.assertEqual(command, thost.apicommands['update'])
+        self.assertTrue('interfaces' in param.keys())
+        self.assertTrue(len(param['interfaces']) == 0, 'interface should be empty but isn\'t')
+        
+        inf38 = zabbixmgm.zbxinterface(self.apimock, inf38_response)
+        thost.add_interface(inf38)
+        command, param = thost.get()
+
+        self.assertTrue('interfaces' in param.keys())
+        self.assertEqual(len(param['interfaces']), 1, 'interface should be 1 but isn\'t')
+        self.assertTrue({'interfaceid': '38'} in param['interfaces'], 'Wrong interface listed')
+
+
+        inf39 = zabbixmgm.zbxinterface(self.apimock, inf39_response)
+        thost.add_interface(inf39)
+        command, param = thost.get()
+
+        self.assertTrue('interfaces' in param.keys())
+        self.assertEqual(len(param['interfaces']), 2, 'interface should be 2 but isn\'t')
+        self.assertTrue({'interfaceid': '38'} in param['interfaces'], 'interface 38 not listed')
+        self.assertTrue({'interfaceid': '39'} in param['interfaces'], 'interface 39 not listed')
+
+        inf40 = zabbixmgm.zbxinterface(self.apimock, inf40_response)
+        thost.add_interface(inf40)
+        command, param = thost.get()
+        
+        self.assertTrue('interfaces' in param.keys())
+        self.assertEqual(len(param['interfaces']), 3, 'interface should be 3 but isn\'t')
+        self.assertTrue({'interfaceid': '38'} in param['interfaces'], 'interface 38 not listed')
+        self.assertTrue({'interfaceid': '39'} in param['interfaces'], 'interface 39 not listed')
+        self.assertTrue({'interfaceid': '40'} in param['interfaces'], 'interface 40 not listed')
+
+
