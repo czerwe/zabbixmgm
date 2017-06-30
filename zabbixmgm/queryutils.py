@@ -1,4 +1,4 @@
-
+from pprint import pprint
 
 def query_group_by_name(api, name):
     params = {
@@ -107,16 +107,18 @@ def query_item_by_name_and_host(api, name, host):
 
 
 
-def query_items_from_host(api, host):
+def query_items_from_hostid(api, host):
     params = {
         'output': 'extend',
-        'filter': {
-            'hosts': [host]
-        },
+        'hostids': [host]
+        # 'filter': {
+        # },
     }
+
+    pprint(params)
 
     result = api.do_request('item.get', params)['result']
     if len(result) >= 1:
-        return result[0]
+        return result
     else:
         return {}

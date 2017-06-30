@@ -5,12 +5,16 @@ from mock import Mock, call
 
 from pprint import pprint
 
+
+app30 = {'applicationid': 30,'name':'blub'}
+app356 = {'applicationid': 356, 'name': "myblub", 'hostid': '4444'}
+
 class application_tests(unittest2.TestCase):
 
     def setUp(self):
         self.apimock = Mock()
         self.testhost = zabbixmgm.zbxhost(self.apimock, 'unithost', {"hostid": "12", 'name': 'unithost'})
-        self.fakeapplication = {'applicationid': 356, 'name': "myblub", 'hostid': '4444'}
+       
 
     def tearDown(self):
         pass
@@ -45,24 +49,36 @@ class application_tests(unittest2.TestCase):
             create_command, param = tapplication.get('create')
         
 
-    def test_application_create_dict(self):
-        tapplication = zabbixmgm.zbxapplication(self.apimock, 'myapp')
-        tapplication.add_host(self.testhost)
+    def test_application_create_missing_field(self):
+        tapplication = zabbixmgm.zbxapplication(self.apimock, 'mygroup')
+        
+        with self.assertRaises(zabbixmgm.core.MissingField):
+            tapplication.get()
 
-        create_command, param = tapplication.get()
-        self.assertEqual(create_command, 'application.create')
-        self.assertEqual(create_command, tapplication.apicommands['create'])
+
+
+    def test_application_create(self):
+        tapplication = zabbixmgm.zbxapplication(self.apimock, 'myapp')
+        
+        tapplication.add_host(self.testhost)
+        command, param = tapplication.get()
+
+        self.assertEqual(command, tapplication.apicommands['create'])
+        self.assertEqual(command, 'application.create')
+
         self.assertEqual(len(param.keys()), 2)
+        self.assertTrue('hostid' in param.keys())
+        self.assertEqual(param['hostid'], '12')
         self.assertTrue('name' in param.keys())
         self.assertEqual(param['name'], 'myapp')
+        self.assertTrue(not 'applicationid' in param.keys())
 
 
 
     def test_application_update_dict(self):
         tapplication = zabbixmgm.zbxapplication(self.apimock, 'myapp')
     
-        
-        tapplication.merge(self.fakeapplication)
+        tapplication.merge(app356)
 
         command, param = tapplication.get()
         self.assertEqual(command, tapplication.apicommands['update'])
@@ -95,14 +111,10 @@ class application_tests(unittest2.TestCase):
 
 
     def test_application_delete_dict(self):
-        tapplication = zabbixmgm.zbxapplication(self.apimock, 'mygroup')
-        fakegroup = {'applicationid': 30,'name':'blub'}
-        tapplication.merge(fakegroup)
-        tapplication.add_host(self.testhost)
-        
+        tapplication = zabbixmgm.zbxapplication(self.apimock, 'mygroup', app30)
+
         command, param = tapplication.get('delete')
         self.assertEqual(command, tapplication.apicommands['delete'])
         self.assertEqual(command, 'application.delete')
         self.assertEqual(len(param), 1)
         self.assertEqual(param[0], 30)
-

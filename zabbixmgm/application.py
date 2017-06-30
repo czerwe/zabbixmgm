@@ -72,7 +72,6 @@ class zbxapplication(core.zbx):
     @name.setter
     def name(self, value):
         self.online_items['name'] = str(value)
-        self.mergediff['name'] = str(value)
 
 
     @property
@@ -106,17 +105,16 @@ class zbxapplication(core.zbx):
                 param_type = 'create'
 
         if param_type in ['create', 'update']:
-            
+            retval = dict(self.online_items)
+
             if param_type == 'create':
                 if self.id:
                     return [False, {}]
-                retval = dict(self.online_items)
             
             if param_type == 'update':
                 if not self.id:
                     raise core.MissingField('id field is missing', '4')
-                    
-                retval = dict(self.mergediff)
+                            
                 retval['applicationid'] = self.id
 
             if self.host and self.host.id:

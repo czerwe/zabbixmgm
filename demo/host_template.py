@@ -40,21 +40,17 @@ else:
     for interface in host1_query.get('interfaces', {}):
         sub_interface = zabbixmgm.query_interfaces_by_id(zapi, interface['interfaceid'])
         partinterface = zabbixmgm.zbxinterface(zapi, interfacemask=sub_interface)
-        print 'add INTERFACE'
         host1.add_interface(partinterface)
 
-    host1_inf2_query = zabbixmgm.query_interfaces_by_id(zapi, interface['interfaceid'])
-    host1_inf2 = zabbixmgm.zbxinterface(zapi, host1_inf2_query)
-    host1_inf2.hostid = host1.id
-    host1_inf2.main = 1
-    pprint(host1_inf2.hostid)
-    # host1_inf2.port = '40001'
-    # host1_inf2.type = zabbixmgm.zbxinterface.TYPE_JMX
-    print 'add INTERFACE'
-    cmd, param = host1_inf2.get()
+    # host1_inf2_query = zabbixmgm.query_interfaces_by_id(zapi, interface['interfaceid'])
+    # host1_inf2 = zabbixmgm.zbxinterface(zapi, host1_inf2_query)
+    # host1_inf2.hostid = host1.id
+    # host1_inf2.main = 1
 
-    host1_inf2.request_result = zapi.do_request(cmd, param)
-    host1.add_interface(host1_inf2)
+    # cmd, param = host1_inf2.get()
+
+    # host1_inf2.request_result = zapi.do_request(cmd, param)
+    # host1.add_interface(host1_inf2)
     
 
 for group in host1_query.get('groups', {}):
@@ -63,8 +59,8 @@ for group in host1_query.get('groups', {}):
     host1.add_group(partgroup)
 
 
-pprint(host1.online_items)
-pprint(host1.interfaces)
+# pprint(host1.online_items)
+# pprint(host1.interfaces)
 
 
 template_response = zabbixmgm.query_template_by_name(zapi,'Template OS Linux')
@@ -81,14 +77,16 @@ tpl_blub.request_result = zapi.do_request(cmd, param)
 
 
 # host1.add_template(tpl_oslinux)
-# host1.add_template(tpl_blub)
+host1.add_template(tpl_blub)
 cmd, param = host1.get()
 host1.request_result = zapi.do_request(cmd, param)
 
-sys.exit(0)
+
 app_name = 'blubapp'
 app_response = zabbixmgm.query_application_by_name(zapi, app_name)
+pprint(app_response)
 app_blub = zabbixmgm.zbxapplication(zapi, app_name, app_response)
+pprint(app_blub.online_items)
 app_blub.add_host(tpl_blub)
 cmd, param = app_blub.get()
 app_blub.request_result = zapi.do_request(cmd, param)
