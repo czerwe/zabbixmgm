@@ -105,7 +105,4 @@ class application_tests(unittest2.TestCase):
         self.assertEqual(command, 'application.delete')
         self.assertEqual(len(param), 1)
         self.assertEqual(param[0], 30)
-        
-
-
 

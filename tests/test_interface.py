@@ -123,12 +123,12 @@ class interface_tests(unittest2.TestCase):
         
 
 
-    def test_intf_diff_simle(self):
+    def test_intf_diff_simple(self):
         iface = zabbixmgm.zbxinterface(self.apimock)
         iface2 = zabbixmgm.zbxinterface(self.apimock)
         iface2.port = 1234
 
-        command, param = iface2.get()
+        command, param = iface2.get('hostcreate')
         left, right, total = iface.diff(param)
         self.assertEqual(left['port'], '10050')
         self.assertEqual(right['port'], '1234')
@@ -143,9 +143,8 @@ class interface_tests(unittest2.TestCase):
 
         iface2.main = 0
 
-        command, param = iface2.get()
+        command, param = iface2.get('hostcreate')
         left, right, total = iface1.diff(param)
-        # pprint(iface1.diff(iface2.get()))
         self.assertEqual(left['port'], '5432')
         self.assertEqual(right['port'], '1234')
         self.assertEqual(right['bulk'], 1)
@@ -153,18 +152,18 @@ class interface_tests(unittest2.TestCase):
 
 
 
-    def test_intf_merge_simple(self):
+    def test_intf_merge_simple2(self):
         iface = zabbixmgm.zbxinterface(self.apimock)
         iface2 = zabbixmgm.zbxinterface(self.apimock)
         iface2.port = 1234
 
-        command, param = iface2.get()
+        command, param = iface2.get('hostcreate')
         left, right, total = iface.diff(param)
         self.assertEqual(left['port'], '10050')
         self.assertEqual(right['port'], '1234')
 
-        iface.merge(iface2.get()[1])
-        left, right, total = iface.diff(iface2.get()[1])
+        iface.merge(iface2.get('hostcreate')[1])
+        left, right, total = iface.diff(iface2.get('hostcreate')[1])
 
         self.assertEqual(len(left.keys()), 0)
         self.assertEqual(len(right.keys()), 0)

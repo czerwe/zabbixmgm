@@ -618,7 +618,5 @@ class zbxhost(core.zbx):
                 retval = [self.id]
             else:
                 retval = list()
-
-        pprint(retval)
-
+                
         return [self.apicommands[param_type], retval]

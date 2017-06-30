@@ -21,7 +21,6 @@ class zbxinterface(core.zbx):
         if interfacemask:
             self.merge(interfacemask)
         
-
         self.difffields = [
                             'interfaceid',
                             'dns',
@@ -54,18 +53,14 @@ class zbxinterface(core.zbx):
             "create": "hostinterface.create",
             "update": "hostinterface.update",
             "delete": "hostinterface.delete",
+            'hostcreate': ''
         }
-
-
 
         self.main = 'no'
         self.host = '127.0.0.1'
         self.port = '10050'
         self.type = zbxinterface.TYPE_AGENT
         self.main = 0
-
-
-
 
     @property
     def id(self):
@@ -183,43 +178,54 @@ class zbxinterface(core.zbx):
 
 
     def get(self, param_type=None):
-        
-        if not param_type:
+        if not param_type or not param_type in self.apicommands.keys():
             if self.id:
                 param_type = 'update'
             else:
                 param_type = 'create'
-        
-        if param_type == 'create':
-            if self.id:
-                return [False, {}]
-            retval = dict(self.online_items)
-        
-        if param_type == 'update':
-            if not self.id:
-                return [False, {}]
-            retval = dict(self.mergediff)
-            retval['interfaceid'] = self.id
-
-
-        if param_type == 'hostcreate':
-            retval = dict(self.online_items)
-            if 'hostid' in retval.keys():
-                del retval['hostid']
-                param_type = 'create'
-
-        if param_type == 'delete':
-            if self.id:
-                retval = [self.id]
-            else:
-                retval = list()
 
         if param_type in ['create', 'update']:
+            print(param_type)
+            if param_type == 'create':
+                if self.id:
+                    return [False, {}]
+                retval = dict(self.online_items)
+            
+            if param_type == 'update':
+                if not self.id:
+                    raise core.MissingField('id field is missing', '4')
+                    
+                retval = dict(self.mergediff)
+                retval['interfaceid'] = self.id
+
+
+            for reqfield in self.required_fields:
+                if not reqfield in retval:
+                    raise core.MissingField('{0} is missing'.format(reqfield), '3')
+
             for param in retval.keys():
                 if param in self.readonlyfields:
                     if param_type == 'update' and param == 'interfaceid':
                         continue
                     else:
                         del retval[param]
+        
+        elif param_type == 'hostcreate':
+            retval = dict(self.online_items)
+            if 'hostid' in retval.keys():
+                del retval['hostid']
+                param_type = 'create'
+            
+
+        elif param_type == 'delete':
+            if self.id:
+                retval = [self.id]
+            else:
+                retval = list()
 
         return [self.apicommands[param_type], retval]
+
+
+
+
+

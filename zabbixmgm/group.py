@@ -20,17 +20,13 @@ class zbxgroup(core.zbx):
                             'internal'
                         ]
 
-        self.readonlyfields = [
-                            'groupid',
-                            'flags',
-                            'internal'
-                        ]
+        self.readonlyfields = ['groupid', 'flags', 'internal']
 
         self.apicommands = {
-            "get": "hostgroup.get",
-            "create": "hostgroup.create",
-            "update": "hostgroup.update",
-            "delete": "hostgroup.delete",
+            'get': 'hostgroup.get',
+            'create': 'hostgroup.create',
+            'update': 'hostgroup.update',
+            'delete': 'hostgroup.delete',
         }
 
         if groupmask:
@@ -51,8 +47,6 @@ class zbxgroup(core.zbx):
         ids = result.get('groupids', [])
         if len(ids) >= 1:
             self.online_items['groupid'] = ids[0]
-
-
 
 
     @property
