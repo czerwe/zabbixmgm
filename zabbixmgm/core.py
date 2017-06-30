@@ -10,6 +10,11 @@ class InvalidFieldValue(Exception):
     def __init__(self, message, status=0):
         super(InvalidFieldValue, self).__init__(message, status)
 
+class MissingField(Exception):
+    def __init__(self, message, status=0):
+        super(MissingField, self).__init__(message, status)
+
+
 
 
 class zbx(object):

@@ -26,6 +26,11 @@ class zbxapplication(core.zbx):
                             'templateids'
                         ]
 
+        self.required_fields = [
+                            'name',
+                            'hostid'
+                                ]
+
         self.apicommands = {
             "get": "application.get",
             "create": "application.create",
@@ -104,41 +109,50 @@ class zbxapplication(core.zbx):
 
 
     def get(self, param_type=None):
+
         if not param_type:
             if self.id:
                 param_type = 'update'
             else:
                 param_type = 'create'
-        
-        if param_type == 'create':
-            if self.id:
-                return [False, {}]
-            retval = dict(self.online_items)
-        
-        if param_type == 'update':
-            if not self.id:
-                return [False, {}]
 
-            retval = dict(self.mergediff)
-            retval['applicationid'] = self.id
-
-        if param_type == 'delete':
-            if self.id:
-                retval = [self.id]
-            else:
-                retval = list()
 
         if param_type in ['create', 'update']:
-            if not self.host or self.host.id:
-                return [False, {}]
-            
-            retval['hostid'] = self.host.id
 
+            if param_type == 'create':
+                if self.id:
+                    return [False, {}]
+                retval = dict(self.online_items)
+            
+            if param_type == 'update':
+                if not self.id:
+                    raise core.MissingField('id field is missing', '4')
+                    
+                retval = dict(self.mergediff)
+                retval['applicationid'] = self.id
+
+            if self.host and self.host.id:
+                retval['hostid'] = self.host.id
+
+            for reqfield in self.required_fields:
+                if not reqfield in retval:
+                    raise core.MissingField('{0} is missing'.format(reqfield), '3')
+            
             for param in retval.keys():
                 if param in self.readonlyfields:
                     if param_type == 'update' and param == 'applicationid':
                         continue
                     else:
                         del retval[param]
+
+
+        elif param_type == 'delete':
+            if self.id:
+                retval = [self.id]
+            else:
+                retval = list()
+
+
+
 
         return [self.apicommands[param_type], retval]

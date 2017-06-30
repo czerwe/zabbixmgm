@@ -20,6 +20,31 @@ class zbxinterface(core.zbx):
         
         if interfacemask:
             self.merge(interfacemask)
+        
+
+        self.difffields = [
+                            'interfaceid',
+                            'hostid',
+                            'dns',
+                            'ip',
+                            'bulk',
+                            'useip'
+                        ]
+
+        self.readonlyfields = [
+                            'interfaceid',
+                            'flags',
+                            'main',
+                            'internal'
+                        ]
+
+        self.apicommands = {
+            "get": "hostinterface.get",
+            "create": "hostinterface.create",
+            "update": "hostinterface.update",
+            "delete": "hostinterface.delete",
+        }
+
 
 
         self.main = 'no'
@@ -106,6 +131,15 @@ class zbxinterface(core.zbx):
     def port(self, value):
         self.online_items['port'] = str(value) 
 
+    @property
+    def hostid(self):
+        return self.online_items.get('hostid', '10050') 
+
+
+    @hostid.setter
+    def hostid(self, value):
+        self.online_items['hostid'] = str(value) 
+
 
     @property
     def type(self):
@@ -137,19 +171,35 @@ class zbxinterface(core.zbx):
             raise core.InvalidFieldValue(message='{0} is not a supported interface type'.format(value), status=2)
 
 
-    def get(self, param_type='create'):
+    def get(self, param_type=None):
+        
+        if not param_type:
+            if self.id:
+                param_type = 'update'
+            else:
+                param_type = 'create'
+        
         if param_type == 'create':
+            if self.id:
+                return [False, {}]
             retval = dict(self.online_items)
         
         if param_type == 'update':
-            if not self.interfaceid:
-                return False
-
+            if not self.id:
+                return [False, {}]
             retval = dict(self.mergediff)
+            retval['interfaceid'] = self.id
+
+
+        if param_type == 'hostcreate':
+            retval = dict(self.online_items)
+            if 'hostid' in retval.keys():
+                del retval['hostid']
+                param_type = 'create'
 
         if param_type == 'delete':
-            if self.interfaceid:
-                retval = [self.interfaceid]
+            if self.id:
+                retval = [self.id]
             else:
                 retval = list()
 
@@ -161,4 +211,43 @@ class zbxinterface(core.zbx):
                     else:
                         del retval[param]
 
-        return retval
+        return [self.apicommands[param_type], retval]
+
+
+
+    def diff(self, iface):
+        """
+        Searches differences between the current zbxdata and an passed zbxdata.
+        It resturns three dictionaries. Fist dictionary is the current original values
+        The sedond dictironary is the passed values and the third contains only values that 
+        are only exist in either of the two dictionarys.
+        
+        :param iface: genertated interface dictionary
+        :type iface: dict
+        
+        :return: list of three dictionaries
+        :rtype: list
+        """
+        from pprint import pprint
+        diff_full = dict()
+        diff_left = dict()
+        diff_right = dict()
+        print '888888888888888888888'
+        pprint(iface)
+        print '888888888888888888888'
+        for indexname in self.difffields:
+            left = self.online_items.get(indexname, None)
+            right = iface.get(indexname, None)
+            if not left == right:
+                if left:
+                    diff_left[indexname] = self.online_items.get(indexname, '')
+                    if not right:
+                        diff_full[indexname] = self.online_items.get(indexname, '')
+
+                if right:
+                    diff_right[indexname] = iface.get(indexname, '')
+                    if not left:
+                        diff_full[indexname] = iface.get(indexname, '')
+
+        return [diff_left, diff_right, diff_full]
+

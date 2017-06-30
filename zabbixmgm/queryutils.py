@@ -19,7 +19,7 @@ def query_host_by_name(api, name):
     params = {
         'output': 'extend',
         'selectGroups': ["name"],
-        'selectInterfaces': ["name"],
+        'selectInterfaces': ["interfaceid"],
         'selectParentTemplates': ["name"],
         'filter': {
             'name': [name]
@@ -73,6 +73,20 @@ def query_interfaces_by_host(api, host):
         return result
     else:
         return {}
+
+
+def query_interfaces_by_id(api, interfaceid):
+    params = {
+        'output': 'extend',
+        'interfaceids': interfaceid,
+    }
+
+    result = api.do_request('hostinterface.get', params)['result']
+    if len(result) >= 1:
+        return result[0]
+    else:
+        return {}
+
 
 
 

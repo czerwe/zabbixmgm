@@ -515,15 +515,15 @@ class zbxhost(core.zbx):
 
     def interface_mains(self):
         for itype in self.interfaces.keys():
-            print [itype.main for ifac in self.interfaces[itype]]
-            # if not 1 in [itype.main for ifac in self.interfaces[itype]] and len(self.interfaces[itype]) >= 1:
-            #     self.interfaces[itype][0].main = 1
+            if not 1 in [ifac.main for ifac in self.interfaces[itype]] and len(self.interfaces[itype]) >= 1:
+                self.interfaces[itype][0].main = 1
 
 
 
     def add_interface(self, interface):
-
         tid, tidx = self.search_interface(host=interface.host, port=interface.port)
+
+
 
         idx = interface.type
         if not tid :
@@ -585,9 +585,11 @@ class zbxhost(core.zbx):
         if param_type == 'create':
             if self.id:
                 return [False, retval]
+            
             self.interface_mains()
+
             retval = dict(self.online_items)
-            retval['interfaces'] = [interface_instance.get() for iftypeid in self.interfaces for interface_instance in self.interfaces[iftypeid]]
+            retval['interfaces'] = [interface_instance.get('hostcreate')[1] for iftypeid in self.interfaces for interface_instance in self.interfaces[iftypeid]]
             retval['groups'] = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
             retval['templates'] = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
 
@@ -600,6 +602,8 @@ class zbxhost(core.zbx):
             retval['templates'] = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
 
 
+
+
         if param_type in ['create', 'update']:
             for param in retval.keys():
                 if param in self.readonlyfields:
@@ -607,10 +611,14 @@ class zbxhost(core.zbx):
                         continue
                     else:
                         del retval[param]
+
+
         elif param_type == 'delete':
             if self.id:
                 retval = [self.id]
             else:
                 retval = list()
+
+        pprint(retval)
 
         return [self.apicommands[param_type], retval]

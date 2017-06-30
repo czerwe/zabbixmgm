@@ -5,7 +5,8 @@ from zabbix.api import ZabbixAPI
 
 
 
-zapi = ZabbixAPI(url='http://192.168.52.10:91', user='Admin', password='zabbix')
+zapi = ZabbixAPI(url='http://localhost', user='Admin', password='zabbix')
+# zapi = ZabbixAPI(url='http://192.168.52.10:91', user='Admin', password='zabbix')
 
 
 # Create Groups
@@ -20,9 +21,10 @@ host1_query = zabbixmgm.query_host_by_name(zapi, hostname)
 host1 = zabbixmgm.zbxhost(zapi, hostname, host1_query)
 
 res = zabbixmgm.query_interfaces_by_host(zapi, host1.id)
-pprint(res)
-sys.exit(0)
+# pprint(res)
+# sys.exit(0)
 
+host1.add_group(grp)
 
 if not host1.id:
     host1_inf = zabbixmgm.zbxinterface(zapi)
@@ -34,24 +36,24 @@ if not host1.id:
     host1_inf2.port = '40001'
     host1_inf2.type = zabbixmgm.zbxinterface.TYPE_JMX
     host1.add_interface(host1_inf2)
-host1.add_group(grp)
 
-# for group in host1_query.get('groups', {}):
-#     sub_group = zabbixmgm.query_group_by_name(zapi, group['name'])
-#     partgroup = zabbixmgm.zbxgroup(zapi, group['name'], groupmask=zabbixmgm.query_group_by_name(zapi, group['name']))
-#     host1.add_group(partgroup)
+for group in host1_query.get('groups', {}):
+    sub_group = zabbixmgm.query_group_by_name(zapi, group['name'])
+    partgroup = zabbixmgm.zbxgroup(zapi, group['name'], groupmask=zabbixmgm.query_group_by_name(zapi, group['name']))
+    host1.add_group(partgroup)
 
 # pprint(host1_query)
-# for group in host1_query.get('interfaces', {}):
-#     sub_group = zabbixmgm.query_group_by_name(zapi, group['name'])
-#     partgroup = zabbixmgm.zbxgroup(zapi, group['name'], groupmask=zabbixmgm.query_group_by_name(zapi, group['name']))
-#     host1.add_group(partgroup)
+for interface in host1_query.get('interfaces', {}):
+    sub_interface = zabbixmgm.query_interfaces_by_id(zapi, interface['interfaceid'])
+    partinterface = zabbixmgm.zbxinterface(zapi, interfacemask=zabbixmgm.query_group_by_name(zapi, group['name']))
+    host1.add_interface(partinterface)
+
+pprint(host1.online_items)
+pprint(host1.interfaces)
 
 
 template_response = zabbixmgm.query_template_by_name(zapi,'Template OS Linux')
 tpl_oslinux = zabbixmgm.zbxtemplate(zapi, 'Template OS Linux', template_response)
-
-
 
 
 template_response = zabbixmgm.query_template_by_name(zapi,'1blub')
@@ -63,7 +65,7 @@ cmd, param = tpl_blub.get()
 tpl_blub.request_result = zapi.do_request(cmd, param)
 
 
-host1.add_template(tpl_oslinux)
+# host1.add_template(tpl_oslinux)
 host1.add_template(tpl_blub)
 
 cmd, param = host1.get()
