@@ -34,7 +34,7 @@ class zbxtemplate(host.zbxhost):
 
     @property
     def request_result(self):
-        return self.groupid
+        return self.templateid
     
     @request_result.setter
     def request_result(self, value):
