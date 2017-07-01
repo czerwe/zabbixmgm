@@ -1,6 +1,7 @@
 import core
+import host
 import re
-
+from pprint import pprint
 class zbxinterface(core.zbx):
 
     TYPE_AGENT = 1
@@ -11,39 +12,32 @@ class zbxinterface(core.zbx):
     BULK_OFF = 0
     BULK_ON = 1
 
-    def __init__(self, api, interfacemask=None):
+    def __init__(self, api, interfacemask=None, **kwargs): 
         super(zbxinterface, self).__init__(api)
         self.difffields = ['interfaceid', 'useip', 'ip', 'dns', 'port', 'bulk', 'type']
-
+       
         self.readonlyfields = ['interfaceid']
         self.online_items = {'ip': '', 'dns': ''}
-        
+        self.assignedhost = None
+
         # setting some defaults
         self.main = 'no'
         self.port = '10050'
-        self.type = zbxinterface.TYPE_AGENT
+        self.type =zbxinterface.TYPE_AGENT
         self.main = 0
+
+
 
         if interfacemask:
             self.merge(interfacemask)
         else:    
             self.host = '127.0.0.1'
         
-        self.difffields = [
-                            'interfaceid',
-                            'dns',
-                            'hostid',
-                            'ip',
-                            'main',
-                            'port',
-                            'type',
-                            'useip',
-                            'bulk',
-                        ]
-
-        self.readonlyfields = [
-                            'interfaceid',
-                        ]
+        for att in kwargs.keys():
+            if att in self.difffields + ['host']:
+                setattr(self, att, kwargs[att])
+            else:
+                raise core.WrongType('{0} is not a valid argument'.format(att), 5)
 
         
         self.required_fields = [
@@ -142,13 +136,10 @@ class zbxinterface(core.zbx):
 
     @property
     def hostid(self):
-        return self.online_items.get('hostid', '10050') 
-
-
-    @hostid.setter
-    def hostid(self, value):
-        self.online_items['hostid'] = str(value) 
-        
+        if self.assignedhost:
+            return self.assignedhost.id
+        else:
+            return    
 
     @property
     def type(self):
@@ -168,6 +159,20 @@ class zbxinterface(core.zbx):
                 raise core.InvalidFieldValue(message='{0} is not a supported interface type'.format(value), status=2)
 
     @property
+    def dns(self):
+        return self.online_items.get('dns', '')
+
+    @property
+    def ip(self):
+        return self.online_items.get('ip', '')
+
+
+    @property
+    def useip(self):
+        return self.online_items.get('useip', 1)
+
+
+    @property
     def bulk(self):
         return self.online_items.get('bulk', zbxinterface.TYPE_AGENT) 
 
@@ -179,6 +184,12 @@ class zbxinterface(core.zbx):
         else:
             raise core.InvalidFieldValue(message='{0} is not a supported interface type'.format(value), status=2)
 
+
+    def add_host(self, hostobject):
+        if type(hostobject) == host.zbxhost:
+            self.assignedhost = hostobject
+        else:
+            raise core.WrongType('Wrong type passed to zbxinterface.add_host got {0}'.format(type(host)), '4')
 
     def get(self, param_type=None):
         if not param_type or not param_type in self.apicommands.keys():

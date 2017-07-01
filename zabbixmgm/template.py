@@ -6,10 +6,9 @@ from pprint import pprint
 
 class zbxtemplate(host.zbxhost):
 
-    def __init__(self, api, name, templatemask=None):
-        super(zbxtemplate, self).__init__(api, name)
-        self.name = name
-
+    def __init__(self, api, templatemask=None, **kwargs):
+        super(zbxtemplate, self).__init__(api, **kwargs)
+       
         self.difffields[self.difffields.index('hostid')] = 'templateid'
         self.readonlyfields[self.readonlyfields.index('hostid')] = 'templateid'
 

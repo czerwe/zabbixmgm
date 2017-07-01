@@ -16,4 +16,4 @@ class item_tests(unittest2.TestCase):
 
 
     def test_item_setname(self):
-        titem = zabbixmgm.zbxhost(self.apimock, 'myitem')
+        titem = zabbixmgm.zbxhost(self.apimock, name='myitem')

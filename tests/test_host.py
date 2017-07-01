@@ -64,7 +64,7 @@ class host_tests(unittest2.TestCase):
 
 
     def test_host_setname(self):
-        thost = zabbixmgm.zbxhost(self.apimock, 'myhost')
+        thost = zabbixmgm.zbxhost(self.apimock, name='myhost')
         self.assertEqual(thost.host, 'myhost')
         self.assertEqual(thost.name, 'myhost')
 
@@ -78,7 +78,7 @@ class host_tests(unittest2.TestCase):
 
 
     def test_host_add_interface(self):
-        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local')
+        thost = zabbixmgm.zbxhost(self.apimock, name='mytesthost.local')
         iface = zabbixmgm.zbxinterface(self.apimock)
         iface.port = '3000'
         iface.host = 'mytesthost.local'
@@ -93,7 +93,7 @@ class host_tests(unittest2.TestCase):
 
 
     def test_host_add_2interface(self):
-        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local')
+        thost = zabbixmgm.zbxhost(self.apimock, name='mytesthost.local')
         iface1 = zabbixmgm.zbxinterface(self.apimock)
         iface1.port = '3000'
         iface1.host = 'mytesthost.local'
@@ -113,7 +113,7 @@ class host_tests(unittest2.TestCase):
         
 
     def test_host_add_2interface_diff_types(self):
-        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local')
+        thost = zabbixmgm.zbxhost(self.apimock, name='mytesthost.local')
         iface1 = zabbixmgm.zbxinterface(self.apimock)
         iface1.port = '3001'
         iface1.host = 'mytesthost.local'
@@ -152,7 +152,7 @@ class host_tests(unittest2.TestCase):
         
 
     def test_host_searchintercept_both(self):
-        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local')
+        thost = zabbixmgm.zbxhost(self.apimock, name='mytesthost.local')
         iface1 = zabbixmgm.zbxinterface(self.apimock)
         iface1.port = '3001'
         iface1.host = 'mytesthost.local'
@@ -185,7 +185,7 @@ class host_tests(unittest2.TestCase):
         
 
     def test_host_searchintercept_port(self):
-        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local')
+        thost = zabbixmgm.zbxhost(self.apimock, name='mytesthost.local')
         iface1 = zabbixmgm.zbxinterface(self.apimock)
         iface1.port = '3001'
         iface1.host = 'mytesthost.local'
@@ -219,7 +219,7 @@ class host_tests(unittest2.TestCase):
 
 
     def test_host_searchintercept_host(self):
-        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local')
+        thost = zabbixmgm.zbxhost(self.apimock, name='mytesthost.local')
         iface1 = zabbixmgm.zbxinterface(self.apimock)
         iface1.port = '3001'
         iface1.host = 'mytesthost.local'
@@ -252,7 +252,7 @@ class host_tests(unittest2.TestCase):
 
 
     def test_host_rm_interface(self):
-        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local')
+        thost = zabbixmgm.zbxhost(self.apimock, name='mytesthost.local')
         iface1 = zabbixmgm.zbxinterface(self.apimock)
         iface1.port = '3001'
         iface1.host = 'mytesthost.local'
@@ -302,7 +302,7 @@ class host_tests(unittest2.TestCase):
 
 
     def test_host_load_response(self):
-        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local')
+        thost = zabbixmgm.zbxhost(self.apimock, name='mytesthost.local')
         self.assertEqual(thost.id, None)
         fakeresponse = {
                         "jsonrpc": "2.0",
@@ -319,14 +319,14 @@ class host_tests(unittest2.TestCase):
 
 
     def test_host_get_create(self):
-        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local')
+        thost = zabbixmgm.zbxhost(self.apimock, name='mytesthost.local')
         command, param = thost.get()
         self.assertEqual(thost.apicommands['create'], command)
 
 
 
     def test_host_get_update(self):
-        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local')
+        thost = zabbixmgm.zbxhost(self.apimock, name='mytesthost.local')
         command, param = thost.get('update')
         self.assertFalse(command)
 
@@ -351,7 +351,7 @@ class host_tests(unittest2.TestCase):
 
 
     def test_host_interface_upon_creation_1inf(self):
-        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local')
+        thost = zabbixmgm.zbxhost(self.apimock, name='mytesthost.local')
         command, param = thost.get()
         self.assertEqual(command, 'host.create')
         self.assertEqual(command, thost.apicommands['create'])
@@ -377,7 +377,7 @@ class host_tests(unittest2.TestCase):
 
 
     def test_host_interface_upon_creation_2inf_same_type(self):
-        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local')
+        thost = zabbixmgm.zbxhost(self.apimock, name='mytesthost.local')
         command, param = thost.get()
         self.assertEqual(command, 'host.create')
         self.assertEqual(command, thost.apicommands['create'])
@@ -423,7 +423,7 @@ class host_tests(unittest2.TestCase):
 
 
     def test_host_interface_upon_creation_2inf_diff_type(self):
-        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local')
+        thost = zabbixmgm.zbxhost(self.apimock, name='mytesthost.local')
         command, param = thost.get()
         self.assertEqual(command, 'host.create')
         self.assertEqual(command, thost.apicommands['create'])
@@ -467,7 +467,7 @@ class host_tests(unittest2.TestCase):
 
     def test_host_interface_upon_update_1inf(self):
 
-        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local', host_search_response)
+        thost = zabbixmgm.zbxhost(self.apimock, host_search_response, name='mytesthost.local')
         command, param = thost.get()
         self.assertEqual(command, 'host.update')
         self.assertTrue('hostid' in param.keys())
@@ -487,7 +487,7 @@ class host_tests(unittest2.TestCase):
 
     def test_host_interface_upon_update_2inf(self):
 
-        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local', host_search_response)
+        thost = zabbixmgm.zbxhost(self.apimock, host_search_response, name='mytesthost.local')
         command, param = thost.get()
         self.assertEqual(command, 'host.update')
         self.assertTrue('hostid' in param.keys())
@@ -519,7 +519,7 @@ class host_tests(unittest2.TestCase):
 
     def test_host_interface_upon_update_3inf_onesametype(self):
 
-        thost = zabbixmgm.zbxhost(self.apimock, 'mytesthost.local', host_search_response)
+        thost = zabbixmgm.zbxhost(self.apimock, host_search_response, name='mytesthost.local')
         command, param = thost.get()
         self.assertEqual(command, 'host.update')
         self.assertTrue('hostid' in param.keys())

@@ -15,6 +15,12 @@ class MissingField(Exception):
         super(MissingField, self).__init__(message, status)
 
 
+class WrongType(Exception):
+    def __init__(self, message, status=0):
+        super(WrongType, self).__init__(message, status)
+
+
+
 
 
 class zbx(object):
@@ -22,6 +28,7 @@ class zbx(object):
     inventory = dict()
 
     def __init__(self, api):
+
         self.api = api
         self.objectname = None
         self.online_items = dict()
@@ -64,17 +71,26 @@ class zbx(object):
         return [diff_left, diff_right, diff_full]
 
 
-
     def merge(self, dictionary):
         left, right, total = self.diff(dictionary)
         self.mergediff = right
         for key in right.keys():
             self.online_items[key] = right[key]
 
-    def get(self):
-        return self.online_items
 
+    def get_attrs(self, withreadonly=False, verify=False):
+        all_attrs = dict((attr, getattr(self, attr)) 
+                        for attr in self.difffields  
+                        if not getattr(self, attr) == None)
 
+        if not withreadonly:
+            for key in all_attrs.keys():
+                if key in self.readonlyfields:
+                    del all_attrs[key]
 
+        if verify:
+            if key in all_attrs.keys():
+                if not key in required_fields:
+                    raise core.MissingField('missing field {0}'.format(key), 5)
 
-
+        return all_attrs

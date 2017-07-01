@@ -7,9 +7,8 @@ class zbxapplication(core.zbx):
     FLAGS_PLAIN = 0
     FLAGS_DISCOVERED = 1
 
-    def __init__(self, api, name, applicationmask=None):
+    def __init__(self, api, applicationmask=None, **kwargs):
         super(zbxapplication, self).__init__(api)
-        self.name = name
         self.host = None
 
         self.difffields = ['applicationid',
@@ -30,6 +29,13 @@ class zbxapplication(core.zbx):
 
         if applicationmask:
             self.merge(applicationmask)
+
+        for att in kwargs.keys():
+            if att in self.difffields:
+                setattr(self, att, kwargs[att])
+            else:
+                raise core.WrongType('{0} is not a valid argument'.format(att), 5)
+
 
 
     @property

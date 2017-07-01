@@ -13,7 +13,7 @@ class application_tests(unittest2.TestCase):
 
     def setUp(self):
         self.apimock = Mock()
-        self.testhost = zabbixmgm.zbxhost(self.apimock, 'unithost', {"hostid": "12", 'name': 'unithost'})
+        self.testhost = zabbixmgm.zbxhost(self.apimock, {"hostid": "12", 'name': 'unithost'}, name='unithost')
        
 
     def tearDown(self):
@@ -21,12 +21,12 @@ class application_tests(unittest2.TestCase):
 
 
     def test_application_setname(self):
-        tapplication = zabbixmgm.zbxapplication(self.apimock, 'mygroup')
-        self.assertEqual(tapplication.name, 'mygroup')
+        tapplication = zabbixmgm.zbxapplication(self.apimock, name='myapp')
+        self.assertEqual(tapplication.name, 'myapp')
 
 
     def test_application_load_response(self):
-        tapplication = zabbixmgm.zbxapplication(self.apimock, 'mytesthost.local')
+        tapplication = zabbixmgm.zbxapplication(self.apimock, name='mytesthost.local')
         self.assertEqual(tapplication.id, None)
         fakeresponse = {
                         "jsonrpc": "2.0",
@@ -41,7 +41,7 @@ class application_tests(unittest2.TestCase):
         self.assertEqual(tapplication.id, '356')
 
     def test_application_create_dict_missing_field(self):
-        tapplication = zabbixmgm.zbxapplication(self.apimock, 'myapp')
+        tapplication = zabbixmgm.zbxapplication(self.apimock, name='myapp')
         
         #tapplication.online_items['internal'] = 1
         
@@ -50,7 +50,7 @@ class application_tests(unittest2.TestCase):
         
 
     def test_application_create_missing_field(self):
-        tapplication = zabbixmgm.zbxapplication(self.apimock, 'mygroup')
+        tapplication = zabbixmgm.zbxapplication(self.apimock, name='myapp')
         
         with self.assertRaises(zabbixmgm.core.MissingField):
             tapplication.get()
@@ -58,7 +58,7 @@ class application_tests(unittest2.TestCase):
 
 
     def test_application_create(self):
-        tapplication = zabbixmgm.zbxapplication(self.apimock, 'myapp')
+        tapplication = zabbixmgm.zbxapplication(self.apimock, name='myapp')
         
         tapplication.add_host(self.testhost)
         command, param = tapplication.get()
@@ -76,7 +76,7 @@ class application_tests(unittest2.TestCase):
 
 
     def test_application_update_dict(self):
-        tapplication = zabbixmgm.zbxapplication(self.apimock, 'myapp')
+        tapplication = zabbixmgm.zbxapplication(self.apimock, name='myapp')
     
         tapplication.merge(app356)
 
@@ -111,7 +111,7 @@ class application_tests(unittest2.TestCase):
 
 
     def test_application_delete_dict(self):
-        tapplication = zabbixmgm.zbxapplication(self.apimock, 'mygroup', app30)
+        tapplication = zabbixmgm.zbxapplication(self.apimock, app30, name='myapp')
 
         command, param = tapplication.get('delete')
         self.assertEqual(command, tapplication.apicommands['delete'])

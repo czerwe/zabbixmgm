@@ -16,12 +16,12 @@ class group_tests(unittest2.TestCase):
 
 
     def test_group_setname(self):
-        tgroup = zabbixmgm.zbxgroup(self.apimock, 'mygroup')
+        tgroup = zabbixmgm.zbxgroup(self.apimock, name='mygroup')
         self.assertEqual(tgroup.name, 'mygroup')
 
 
     def test_group_diff(self):
-        tgroup = zabbixmgm.zbxgroup(self.apimock, 'mygroup')
+        tgroup = zabbixmgm.zbxgroup(self.apimock, name='mygroup')
         fakegroup = {'name':'blub', 'internal': 1}
 
         left, right, total = tgroup.diff(fakegroup)
@@ -37,7 +37,7 @@ class group_tests(unittest2.TestCase):
 
 
     def test_group_merge(self):
-        tgroup = zabbixmgm.zbxgroup(self.apimock, 'mygroup')
+        tgroup = zabbixmgm.zbxgroup(self.apimock, name='mygroup')
         fakegroup = {'groupid': 30,'name':'blub', 'internal': 1}
 
 
@@ -52,7 +52,7 @@ class group_tests(unittest2.TestCase):
 
 
     def test_group_create_dict(self):
-        tgroup = zabbixmgm.zbxgroup(self.apimock, 'mygroup')
+        tgroup = zabbixmgm.zbxgroup(self.apimock, name='mygroup')
         
         tgroup.online_items['internal'] = 1
         create_command, cr = tgroup.get('create')
@@ -61,7 +61,7 @@ class group_tests(unittest2.TestCase):
 
 
     def test_group_update_dict(self):
-        tgroup = zabbixmgm.zbxgroup(self.apimock, 'mygroup')
+        tgroup = zabbixmgm.zbxgroup(self.apimock, name='mygroup')
         fakegroup = {'groupid': 30,'name':'blub', 'internal': 1}
         tgroup.merge(fakegroup)
         
@@ -72,7 +72,7 @@ class group_tests(unittest2.TestCase):
 
 
     def test_group_delete_dict(self):
-        tgroup = zabbixmgm.zbxgroup(self.apimock, 'mygroup')
+        tgroup = zabbixmgm.zbxgroup(self.apimock, name='mygroup')
         fakegroup = {'groupid': 30,'name':'blub', 'internal': 1}
         tgroup.merge(fakegroup)
         

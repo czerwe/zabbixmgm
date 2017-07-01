@@ -61,7 +61,7 @@ class zbxitem(core.zbx):
 
 
 
-    def __init__(self, api, name, itemmask=None):
+    def __init__(self, api, itemmask=None, **kwargs):
         super(zbxitem, self).__init__(api)
 
         self.name = name
@@ -137,6 +137,14 @@ class zbxitem(core.zbx):
 
         if itemmask:
             self.merge(itemmask)
+
+        
+        for att in kwargs.keys():
+            if att in self.difffields:
+                setattr(self, att, kwargs[att])
+            else:
+                raise core.WrongType('{0} is not a valid argument'.format(att), 5)
+
 
 
     @property

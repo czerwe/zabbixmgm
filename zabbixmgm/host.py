@@ -57,16 +57,13 @@ class zbxhost(core.zbx):
     STATUS_UNMONITORED = 1
 
 
-    def __init__(self, api, name, hostmask=None):
+    def __init__(self, api, hostmask=None, **kwargs):
         super(zbxhost, self).__init__(api)
-
-        self.host = name
 
         self.interfaces = dict()
         self.groups = dict()
         self.templates = dict()
         # self.update()
-
 
         self.apicommands = {
             "get": "host.get",
@@ -142,6 +139,12 @@ class zbxhost(core.zbx):
         if hostmask:
             self.merge(hostmask)
 
+        for att in kwargs.keys():
+            if att in self.difffields:
+                setattr(self, att, kwargs[att])
+            else:
+                raise core.WrongType('{0} is not a valid argument'.format(att), 5)
+
 
     @property
     def id(self):
@@ -187,6 +190,10 @@ class zbxhost(core.zbx):
     @name.setter
     def name(self, value):
         self.online_items['name'] = value
+        
+        if not self.host:
+            self.host = value
+        
         self.mergediff['name'] = value
 
 
@@ -530,7 +537,7 @@ class zbxhost(core.zbx):
                 self.interfaces[idx] = list()
         
             self.interfaces[idx].append(interface)
-            interface.hostid = self.id
+            interface.add_host(self)
 
 
 

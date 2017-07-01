@@ -9,9 +9,8 @@ class zbxgroup(core.zbx):
     INTERNAL_NOT_NORMAL = 0
     INTERNAL_INTERNAL = 1
 
-    def __init__(self, api, name, groupmask=None):
+    def __init__(self, api, groupmask=None, **kwargs):
         super(zbxgroup, self).__init__(api)
-        self.name = name
 
         self.difffields = [
                             'groupid',
@@ -31,6 +30,13 @@ class zbxgroup(core.zbx):
 
         if groupmask:
             self.merge(groupmask)
+
+        for att in kwargs.keys():
+            if att in self.difffields:
+                setattr(self, att, kwargs[att])
+            else:
+                raise core.WrongType('{0} is not a valid argument'.format(att), 5)
+
 
 
     @property
