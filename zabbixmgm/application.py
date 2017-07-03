@@ -1,4 +1,5 @@
 import core
+import host
 
 from pprint import pprint
 
@@ -7,9 +8,11 @@ class zbxapplication(core.zbx):
     FLAGS_PLAIN = 0
     FLAGS_DISCOVERED = 1
 
-    def __init__(self, api, applicationmask=None, **kwargs):
+    def __init__(self, api, **kwargs):
         super(zbxapplication, self).__init__(api)
         self.host = None
+
+
 
         self.difffields = ['applicationid',
                            'hostid',
@@ -27,11 +30,8 @@ class zbxapplication(core.zbx):
             'delete': 'application.delete',
         }
 
-        if applicationmask:
-            self.merge(applicationmask)
-
         for att in kwargs.keys():
-            if att in self.difffields:
+            if att in self.difffields + ['mask']:
                 setattr(self, att, kwargs[att])
             else:
                 raise core.WrongType('{0} is not a valid argument'.format(att), 5)
@@ -59,16 +59,20 @@ class zbxapplication(core.zbx):
 
     @applicationid.setter
     def applicationid(self, value):
-        raise core.ReadOnlyField('applicationid is an readonly field')
+        self.online_items['applicationid'] = int(value)
+        # raise core.ReadOnlyField('applicationid is an readonly field')
 
 
     @property
     def hostid(self):
-        return self.online_items.get('hostid', None)
+        if self.host:
+            return self.host.id
+        return None
 
     @hostid.setter
     def hostid(self, value):
-        raise core.ReadOnlyField('hostid is an readonly field')
+        self.online_items['hostid'] = str(value)
+        # raise core.ReadOnlyField('hostid is an readonly field')
 
 
     @property
@@ -86,7 +90,8 @@ class zbxapplication(core.zbx):
 
     @flags.setter
     def flags(self, value):
-        raise core.ReadOnlyField('flags is an readonly field')
+        self.online_items['flags'] = int(value)
+        # raise core.ReadOnlyField('flags is an readonly field')
 
 
     @property
@@ -95,15 +100,36 @@ class zbxapplication(core.zbx):
 
     @templateids.setter
     def templateids(self, value):
-        raise core.ReadOnlyField('templateids is an readonly field')
+        self.online_items['templateids'] = value
+        # raise core.ReadOnlyField('templateids is an readonly field')
+        
+    @property
+    def mask(self):
+        return self.get_attrs(withreadonly=True, verify=False)
+
+    @mask.setter
+    def mask(self, value):
+        self.merge(value)
 
 
+    def merge(self, dictionary):
+        left, right, total = self.diff(dictionary)
+        self.mergediff = right
+        for key in right.keys():
+            setattr(self, key, right[key])
+            # self.online_items[key] = right[key]
 
-    def add_host(self, host):
-        self.host = host
+
+    def add_host(self, hostinstance):
+        if type(hostinstance) == host.zbxhost:
+            self.host = hostinstance
+            self.hostid = hostinstance.id
+        else:
+            raise core.WrongType("expect zabbixmgm.zbxhost as argument not {0}".format(type(hostinstance)))
 
 
     def get(self, param_type=None):
+
         if not param_type:
             if self.id:
                 param_type = 'update'
@@ -137,10 +163,20 @@ class zbxapplication(core.zbx):
                     else:
                         del retval[param]
 
+            # retval2 = self.get_attrs(withreadonly=True, verify=True)
+            print '\n{0} ----------------'.format(param_type)
+            pprint(retval)
+            pprint(self.get_attrs(withreadonly=True, verify=False))
+            print '----------------\n'
+
+
+
         elif param_type == 'delete':
             if self.id:
                 retval = [self.id]
             else:
                 retval = list()
+
+
 
         return [self.apicommands[param_type], retval]

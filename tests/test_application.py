@@ -111,7 +111,7 @@ class application_tests(unittest2.TestCase):
 
 
     def test_application_delete_dict(self):
-        tapplication = zabbixmgm.zbxapplication(self.apimock, app30, name='myapp')
+        tapplication = zabbixmgm.zbxapplication(self.apimock, mask=app30, name='myapp')
 
         command, param = tapplication.get('delete')
         self.assertEqual(command, tapplication.apicommands['delete'])

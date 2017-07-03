@@ -5,14 +5,17 @@ import zabbixmgm
 
 
 zapi = ZabbixAPI(url='http://localhost', user='Admin', password='zabbix')
-blub = zabbixmgm.zbxinterface(zapi, {'interfaceid': '232'}, host='hollei')
-pprint(blub.get_attrs(True))
-
-# pprint(blub.get_attrs())
+# blub = zabbixmgm.zbxinterface(zapi, {'interfaceid': '232'}, host='hollei')
 # pprint(blub.get_attrs(True))
 
-blub = zabbixmgm.zbxhost(zapi, "test", {'hostid': '232'})
-pprint(blub.get_attrs(True))
+
+app = zabbixmgm.zbxapplication(zapi, mask={'name': '232'})
+
+pprint(app.get_attrs())
+# pprint(blub.get_attrs(True))
+
+# blub = zabbixmgm.zbxhost(zapi, "test", {'hostid': '232'})
+# pprint(blub.get_attrs(True))
 
 
 # class blub(object):

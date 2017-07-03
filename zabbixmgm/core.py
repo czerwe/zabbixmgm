@@ -75,7 +75,10 @@ class zbx(object):
         left, right, total = self.diff(dictionary)
         self.mergediff = right
         for key in right.keys():
+            # setattr(self, key, right[key])
             self.online_items[key] = right[key]
+
+
 
 
     def get_attrs(self, withreadonly=False, verify=False):
@@ -89,8 +92,8 @@ class zbx(object):
                     del all_attrs[key]
 
         if verify:
-            if key in all_attrs.keys():
-                if not key in required_fields:
-                    raise core.MissingField('missing field {0}'.format(key), 5)
-
+            for key in self.required_fields:
+                if not key in all_attrs.keys():
+                        raise MissingField('missing field {0}'.format(key), 5)
+              
         return all_attrs
