@@ -12,29 +12,25 @@ class zbxinterface(core.zbx):
     BULK_OFF = 0
     BULK_ON = 1
 
-    def __init__(self, api, interfacemask=None, **kwargs): 
+    def __init__(self, api, **kwargs): 
         super(zbxinterface, self).__init__(api)
-        self.difffields = ['interfaceid', 'useip', 'ip', 'dns', 'port', 'bulk', 'type']
+        self.difffields = ['interfaceid', 'useip', 'ip', 'dns', 'port', 'bulk', 'type', 'hostid', 'main']
        
         self.readonlyfields = ['interfaceid']
-        self.online_items = {'ip': '', 'dns': ''}
+        # self.online_items = {'ip': '', 'dns': ''}
+        # self.online_items = {}
         self.assignedhost = None
 
         # setting some defaults
-        self.main = 'no'
-        self.port = '10050'
-        self.type =zbxinterface.TYPE_AGENT
-        self.main = 0
+        # self.main = 'no'
+        # self.port = '10050'
+        # self.type =zbxinterface.TYPE_AGENT
+        # self.main = 0
 
 
-
-        if interfacemask:
-            self.merge(interfacemask)
-        else:    
-            self.host = '127.0.0.1'
         
         for att in kwargs.keys():
-            if att in self.difffields + ['host']:
+            if att in self.difffields + ['mask', 'host']:
                 setattr(self, att, kwargs[att])
             else:
                 raise core.WrongType('{0} is not a valid argument'.format(att), 5)
@@ -81,7 +77,8 @@ class zbxinterface(core.zbx):
 
     @interfaceid.setter
     def interfaceid(self, value):
-        raise core.ReadOnlyField('snmp_errors_from is an readonly field')
+        self.online_items['interfaceid'] = str(value)
+        # raise core.ReadOnlyField('snmp_errors_from is an readonly field')
 
 
     @property
@@ -117,9 +114,9 @@ class zbxinterface(core.zbx):
 
     @main.setter
     def main(self, value):
-        if value in [1, True, 'yes']:
+        if value in [1, True, 'yes', '1']:
             self.online_items['main'] = 1
-        elif value in [0, False, 'no']:
+        elif value in [0, False, 'no', '0']:
             self.online_items['main'] = 0
         else:
             raise core.InvalidFieldValue(message='{0} not supported to set the main value'.format(value), status=2)
@@ -136,11 +133,13 @@ class zbxinterface(core.zbx):
 
     @property
     def hostid(self):
-        if self.assignedhost:
-            return self.assignedhost.id
-        else:
-            return    
+        return self.online_items.get('hostid', None) 
 
+
+    @hostid.setter
+    def hostid(self, value):
+        self.online_items['hostid'] = str(value) 
+        
     @property
     def type(self):
         return self.online_items.get('type', zbxinterface.TYPE_AGENT) 
@@ -162,14 +161,39 @@ class zbxinterface(core.zbx):
     def dns(self):
         return self.online_items.get('dns', '')
 
+
+    @dns.setter
+    def dns(self, value):
+        self.online_items['dns'] = str(value)
+
+
     @property
     def ip(self):
-        return self.online_items.get('ip', '')
+        if len(self.dns) == 0:
+            retval = '127.0.0.1'
+        else:
+            retval = ''
+
+        return self.online_items.get('ip', retval)
+
+
+    @ip.setter
+    def ip(self, value):
+        self.online_items['ip'] = str(value)
 
 
     @property
     def useip(self):
-        return self.online_items.get('useip', 1)
+        if len(self.dns) == 0:
+            retval = 1
+        else:
+            retval = 0
+
+        return self.online_items.get('useip', retval)
+
+    @useip.setter
+    def useip(self, value):
+        self.online_items['useip'] = int(value)
 
 
     @property
@@ -184,6 +208,27 @@ class zbxinterface(core.zbx):
         else:
             raise core.InvalidFieldValue(message='{0} is not a supported interface type'.format(value), status=2)
 
+    @property
+    def mask(self):
+        return self.get_attrs(withreadonly=True, verify=False)
+
+    @mask.setter
+    def mask(self, value):
+        for passed_key in value.keys():
+            setattr(self, passed_key, value[passed_key])
+        # self.merge(value)
+
+
+    def merge(self, dictionary):
+        # pprint (dictionary)
+        # pprint(self.diff(dictionary))
+        left, right, total = self.diff(dictionary)
+        self.mergediff = right
+        for key in right.keys():
+            # setattr(self, key, right[key])
+            self.online_items[key] = right[key]
+
+
 
     def add_host(self, hostobject):
         if type(hostobject) == host.zbxhost:
@@ -191,54 +236,101 @@ class zbxinterface(core.zbx):
         else:
             raise core.WrongType('Wrong type passed to zbxinterface.add_host got {0}'.format(type(host)), '4')
 
+
+
+    def get_update_modifier(self, value):
+        if self.interfaceid:
+            value['interfaceid'] = self.interfaceid
+        return value
+
+    def get_create_modifier(self, value):
+        return value
+
+
+
     def get(self, param_type=None):
-        if not param_type or not param_type in self.apicommands.keys():
+
+        if not param_type:
             if self.id:
                 param_type = 'update'
             else:
                 param_type = 'create'
 
-        if param_type in ['create', 'update']:
-            print(param_type)
-            if param_type == 'create':
-                if self.id:
-                    return [False, {}]
-                retval = dict(self.online_items)
-            
-            if param_type == 'update':
-                if not self.id:
-                    raise core.MissingField('id field is missing', '4')
-                    
-                retval = dict(self.online_items)
-                # retval = dict(self.mergediff)
-                retval['interfaceid'] = self.id
+        if param_type == 'create':
+            # pprint(self.online_items)
+            # pprint(self.get_attrs(withreadonly=False, verify=False))
+            retval = self.get_create_modifier(self.get_attrs(withreadonly=False, verify=True))
 
+        if param_type == 'update':
+            retval = self.get_update_modifier(self.get_attrs(withreadonly=False, verify=True))
 
-            for reqfield in self.required_fields:
-                if not reqfield in retval:
-                    raise core.MissingField('{0} is missing'.format(reqfield), '3')
-
-            for param in retval.keys():
-                if param in self.readonlyfields:
-                    if param_type == 'update' and param == 'interfaceid':
-                        continue
-                    else:
-                        del retval[param]
-        
-        elif param_type == 'hostcreate':
-            retval = dict(self.online_items)
-            if 'hostid' in retval.keys():
-                del retval['hostid']
-                param_type = 'create'
-            
-
-        elif param_type == 'delete':
+        if param_type == 'delete':
             if self.id:
                 retval = [self.id]
             else:
                 retval = list()
 
+        if param_type == 'hostcreate':
+            retval = self.get_create_modifier(self.get_attrs(withreadonly=False, verify=False))
+            if 'hostid' in retval.keys():
+                del retval['hostid']
+                param_type = 'create'
+            
+        # print "{0}-----------------".format(param_type)
+        # pprint(retval)
+        # print "{0} ----------------".format(param_type)
+
         return [self.apicommands[param_type], retval]
+
+
+    # def get(self, param_type=None):
+    #     if not param_type or not param_type in self.apicommands.keys():
+    #         if self.id:
+    #             param_type = 'update'
+    #         else:
+    #             param_type = 'create'
+
+    #     if param_type in ['create', 'update']:
+    #         print(param_type)
+    #         if param_type == 'create':
+    #             if self.id:
+    #                 return [False, {}]
+    #             retval = dict(self.online_items)
+            
+    #         if param_type == 'update':
+    #             if not self.id:
+    #                 raise core.MissingField('id field is missing', '4')
+                    
+    #             retval = dict(self.online_items)
+    #             # retval = dict(self.mergediff)
+    #             retval['interfaceid'] = self.id
+
+
+    #         for reqfield in self.required_fields:
+    #             if not reqfield in retval:
+    #                 raise core.MissingField('{0} is missing'.format(reqfield), '3')
+
+    #         for param in retval.keys():
+    #             if param in self.readonlyfields:
+    #                 if param_type == 'update' and param == 'interfaceid':
+    #                     continue
+    #                 else:
+    #                     del retval[param]
+        
+    #     elif param_type == 'hostcreate':
+    #         retval = dict(self.online_items)
+    #         if 'hostid' in retval.keys():
+    #             del retval['hostid']
+    #             param_type = 'create'
+            
+
+    #     elif param_type == 'delete':
+    #         if self.id:
+    #             retval = [self.id]
+    #         else:
+    #             retval = list()
+
+    #     return [self.apicommands[param_type], retval]
 
 
 
