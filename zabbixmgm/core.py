@@ -79,6 +79,12 @@ class zbx(object):
             self.online_items[key] = right[key]
 
 
+    def get_update_modifier(self, value):
+        return value
+
+    def get_create_modifier(self, value):
+        return value
+
 
 
     def get_attrs(self, withreadonly=False, verify=False):
@@ -97,3 +103,26 @@ class zbx(object):
                         raise MissingField('missing field {0}'.format(key), 5)
               
         return all_attrs
+
+
+    def get(self, param_type=None):
+
+        if not param_type:
+            if self.id:
+                param_type = 'update'
+            else:
+                param_type = 'create'
+
+        if param_type == 'create':
+            retval = self.get_create_modifier(self.get_attrs(withreadonly=False, verify=True))
+
+        if param_type == 'update':
+            retval = self.get_update_modifier(self.get_attrs(withreadonly=False, verify=True))
+
+        if param_type == 'delete':
+            if self.id:
+                retval = [self.id]
+            else:
+                retval = list()
+
+        return [self.apicommands[param_type], retval]

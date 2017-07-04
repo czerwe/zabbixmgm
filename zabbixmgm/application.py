@@ -67,8 +67,9 @@ class zbxapplication(core.zbx):
     def hostid(self):
         if self.host:
             return self.host.id
-        return None
-
+        else:
+            return self.online_items.get('hostid', None)
+            
     @hostid.setter
     def hostid(self, value):
         self.online_items['hostid'] = str(value)
@@ -128,55 +129,11 @@ class zbxapplication(core.zbx):
             raise core.WrongType("expect zabbixmgm.zbxhost as argument not {0}".format(type(hostinstance)))
 
 
-    def get(self, param_type=None):
+    def get_update_modifier(self, value):
+        if self.applicationid:
+            value['applicationid'] = self.applicationid
+        return value
 
-        if not param_type:
-            if self.id:
-                param_type = 'update'
-            else:
-                param_type = 'create'
+    def get_create_modifier(self, value):
+        return value
 
-        if param_type in ['create', 'update']:
-            retval = dict(self.online_items)
-
-            if param_type == 'create':
-                if self.id:
-                    return [False, {}]
-            
-            if param_type == 'update':
-                if not self.id:
-                    raise core.MissingField('id field is missing', '4')
-                            
-                retval['applicationid'] = self.id
-
-            if self.host and self.host.id:
-                retval['hostid'] = self.host.id
-
-            for reqfield in self.required_fields:
-                if not reqfield in retval:
-                    raise core.MissingField('{0} is missing'.format(reqfield), '3')
-            
-            for param in retval.keys():
-                if param in self.readonlyfields:
-                    if param_type == 'update' and param == 'applicationid':
-                        continue
-                    else:
-                        del retval[param]
-
-            # retval2 = self.get_attrs(withreadonly=True, verify=True)
-            print '\n{0} ----------------'.format(param_type)
-            pprint(retval)
-            pprint(self.get_attrs(withreadonly=True, verify=False))
-            print '----------------\n'
-
-
-
-        elif param_type == 'delete':
-            if self.id:
-                retval = [self.id]
-            else:
-                retval = list()
-
-
-
-        return [self.apicommands[param_type], retval]
