@@ -114,9 +114,13 @@ class zbx(object):
                 param_type = 'create'
 
         if param_type == 'create':
+            if self.id:
+                return [None, {}]
             retval = self.get_create_modifier(self.get_attrs(withreadonly=False, verify=True))
 
         if param_type == 'update':
+            if not self.id:
+                return [None, {}]
             retval = self.get_update_modifier(self.get_attrs(withreadonly=False, verify=True))
 
         if param_type == 'delete':

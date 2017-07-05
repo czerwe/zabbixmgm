@@ -13,7 +13,7 @@ class application_tests(unittest2.TestCase):
 
     def setUp(self):
         self.apimock = Mock()
-        self.testhost = zabbixmgm.zbxhost(self.apimock, {"hostid": "12", 'name': 'unithost'}, name='unithost')
+        self.testhost = zabbixmgm.zbxhost(self.apimock, mask={"hostid": "12", 'name': 'unithost'}, name='unithost')
        
 
     def tearDown(self):

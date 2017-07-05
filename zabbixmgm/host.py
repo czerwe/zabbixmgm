@@ -57,10 +57,10 @@ class zbxhost(core.zbx):
     STATUS_UNMONITORED = 1
 
 
-    def __init__(self, api, hostmask=None, **kwargs):
+    def __init__(self, api, **kwargs):
         super(zbxhost, self).__init__(api)
 
-        self.interfaces = dict()
+        self.interfaceobjects = dict()
         self.groups = dict()
         self.templates = dict()
         # self.update()
@@ -136,11 +136,11 @@ class zbxhost(core.zbx):
 
 
 
-        if hostmask:
-            self.merge(hostmask)
+        # if hostmask:
+        #     self.merge(hostmask)
 
         for att in kwargs.keys():
-            if att in self.difffields:
+            if att in self.difffields + ['hostid', 'mask']:
                 setattr(self, att, kwargs[att])
             else:
                 raise core.WrongType('{0} is not a valid argument'.format(att), 5)
@@ -167,7 +167,8 @@ class zbxhost(core.zbx):
 
     @hostid.setter
     def hostid(self, value):
-        raise core.ReadOnlyField('hostid is an readonly field')
+        self.online_items['hostid'] = value
+        # raise core.ReadOnlyField('hostid is an readonly field')
 
 
     @property
@@ -198,12 +199,22 @@ class zbxhost(core.zbx):
 
 
     @property
+    def mask(self):
+        return self.get_attrs(withreadonly=True, verify=False)
+
+    @mask.setter
+    def mask(self, value):
+        for passed_key in value.keys():
+            setattr(self, passed_key, value[passed_key])
+
+    @property
     def available(self):
         return self.online_items.get('available', 0)
 
     @available.setter
     def available(self, value):
-        raise core.ReadOnlyField('available is an readonly field')
+        self.online_items['available'] = value
+        # raise core.ReadOnlyField('available is an readonly field')
 
 
     @property
@@ -223,7 +234,8 @@ class zbxhost(core.zbx):
 
     @disable_until.setter
     def disable_until(self, value):
-        raise core.ReadOnlyField('disable_until is an readonly field')
+        # raise core.ReadOnlyField('disable_until is an readonly field')
+        self.online_items['disable_until'] = value
 
 
     @property
@@ -232,7 +244,8 @@ class zbxhost(core.zbx):
 
     @error.setter
     def error(self, value):
-        raise core.ReadOnlyField('error is an readonly field')
+        self.online_items['error'] = value
+        # raise core.ReadOnlyField('error is an readonly field')
 
 
     @property
@@ -242,7 +255,8 @@ class zbxhost(core.zbx):
 
     @errors_from.setter
     def errors_from(self, value):
-        raise core.ReadOnlyField('errors_from is an readonly field')
+        self.online_items['errors_from'] = value
+        # raise core.ReadOnlyField('errors_from is an readonly field')
 
 
     @property
@@ -251,7 +265,8 @@ class zbxhost(core.zbx):
 
     @flags.setter
     def flags(self, value):
-        raise core.ReadOnlyField('flags is an readonly field')
+        self.online_items['flags'] = value
+        # raise core.ReadOnlyField('flags is an readonly field')
         
 
     @property
@@ -284,7 +299,8 @@ class zbxhost(core.zbx):
 
     @ipmi_available.setter
     def ipmi_available(self, value):
-        raise core.ReadOnlyField('ipmi_available is an readonly field')
+        self.online_items['ipmi_available'] = value
+        # raise core.ReadOnlyField('ipmi_available is an readonly field')
 
 
     @property
@@ -293,7 +309,8 @@ class zbxhost(core.zbx):
 
     @ipmi_disable_until.setter
     def ipmi_disable_until(self, value):
-        raise core.ReadOnlyField('ipmi_disable_until is an readonly field')
+        self.online_items['ipmi_disable_until'] = value
+        # raise core.ReadOnlyField('ipmi_disable_until is an readonly field')
 
 
     @property
@@ -302,7 +319,8 @@ class zbxhost(core.zbx):
 
     @ipmi_error.setter
     def ipmi_error(self, value):
-        raise core.ReadOnlyField('ipmi_error is an readonly field')
+        self.online_items['ipmi_error'] = value
+        # raise core.ReadOnlyField('ipmi_error is an readonly field')
 
 
     @property
@@ -311,7 +329,8 @@ class zbxhost(core.zbx):
 
     @ipmi_errors_from.setter
     def ipmi_errors_from(self, value):
-        raise core.ReadOnlyField('ipmi_errors_from is an readonly field')
+        self.online_items['ipmi_errors_from'] = value
+        # raise core.ReadOnlyField('ipmi_errors_from is an readonly field')
 
 
     @property
@@ -352,7 +371,8 @@ class zbxhost(core.zbx):
 
     @jmx_available.setter
     def jmx_available(self, value):
-        raise core.ReadOnlyField('jmx_available is an readonly field')
+        self.online_items['jmx_available'] = value
+        # raise core.ReadOnlyField('jmx_available is an readonly field')
 
 
     @property
@@ -361,7 +381,8 @@ class zbxhost(core.zbx):
 
     @jmx_disable_until.setter
     def jmx_disable_until(self, value):
-        raise core.ReadOnlyField('jmx_disable_until is an readonly field')
+        self.online_items['jmx_disable_until'] = value
+        # raise core.ReadOnlyField('jmx_disable_until is an readonly field')
 
 
     @property
@@ -370,7 +391,8 @@ class zbxhost(core.zbx):
 
     @jmx_error.setter
     def jmx_error(self, value):
-        raise core.ReadOnlyField('jmx_error is an readonly field')
+        self.online_items['jmx_error'] = value
+        # raise core.ReadOnlyField('jmx_error is an readonly field')
 
 
     @property
@@ -379,7 +401,8 @@ class zbxhost(core.zbx):
 
     @jmx_errors_from.setter
     def jmx_errors_from(self, value):
-        raise core.ReadOnlyField('jmx_errors_from is an readonly field')
+        self.online_items['jmx_errors_from'] = value
+        # raise core.ReadOnlyField('jmx_errors_from is an readonly field')
 
 
     @property
@@ -388,7 +411,8 @@ class zbxhost(core.zbx):
 
     @maintenance_from.setter
     def maintenance_from(self, value):
-        raise core.ReadOnlyField('maintenance_from is an readonly field')
+        self.online_items['maintenance_from'] = value
+        # raise core.ReadOnlyField('maintenance_from is an readonly field')
 
 
     @property
@@ -397,7 +421,8 @@ class zbxhost(core.zbx):
 
     @maintenance_status.setter
     def maintenance_status(self, value):
-        raise core.ReadOnlyField('maintenance_status is an readonly field')
+        self.online_items['maintenance_status'] = value
+        # raise core.ReadOnlyField('maintenance_status is an readonly field')
 
 
     @property
@@ -406,7 +431,8 @@ class zbxhost(core.zbx):
 
     @maintenance_type.setter
     def maintenance_type(self, value):
-        raise core.ReadOnlyField('maintenance_type is an readonly field')
+        self.online_items['maintenance_type'] = value
+        # raise core.ReadOnlyField('maintenance_type is an readonly field')
 
 
     @property
@@ -415,7 +441,8 @@ class zbxhost(core.zbx):
 
     @maintenanceid.setter
     def maintenanceid(self, value):
-        raise core.ReadOnlyField('maintenanceid is an readonly field')
+        self.online_items['maintenanceid'] = value
+        # raise core.ReadOnlyField('maintenanceid is an readonly field')
 
 
     @property
@@ -434,7 +461,8 @@ class zbxhost(core.zbx):
 
     @snmp_available.setter
     def snmp_available(self, value):
-        raise core.ReadOnlyField('snmp_available is an readonly field')
+        self.online_items['snmp_available'] = value
+        # raise core.ReadOnlyField('snmp_available is an readonly field')
 
 
     @property
@@ -443,7 +471,8 @@ class zbxhost(core.zbx):
 
     @snmp_disable_until.setter
     def snmp_disable_until(self, value):
-        raise core.ReadOnlyField('snmp_disable_until is an readonly field')
+        self.online_items['snmp_disable_until'] = value
+        # raise core.ReadOnlyField('snmp_disable_until is an readonly field')
 
 
     @property
@@ -452,7 +481,8 @@ class zbxhost(core.zbx):
 
     @snmp_error.setter
     def snmp_error(self, value):
-        raise core.ReadOnlyField('snmp_error is an readonly field')
+        self.online_items['snmp_error'] = value
+        # raise core.ReadOnlyField('snmp_error is an readonly field')
 
 
     @property
@@ -461,7 +491,8 @@ class zbxhost(core.zbx):
 
     @snmp_errors_from.setter
     def snmp_errors_from(self, value):
-        raise core.ReadOnlyField('snmp_errors_from is an readonly field')
+        self.online_items['snmp_errors_from'] = value
+        # raise core.ReadOnlyField('snmp_errors_from is an readonly field')
 
 
     @property
@@ -511,7 +542,36 @@ class zbxhost(core.zbx):
     @tls_psk.setter
     def tls_psk(self, value):
         self.online_items['tls_psk'] = value
-        self.mergediff['tls_psk'] = value
+        self.mergediff['tls_psk'] = valueo
+
+
+    @property
+    def interfaces(self):
+        return {} 
+        # return self.online_items.get('tls_psk', '')
+
+    @interfaces.setter
+    def interfaces(self, value):
+        pass
+        # pprint('GOT')
+        # pprint(value)
+        # self.online_items['interfaces'] = value
+
+
+
+    @property
+    def groups(self):
+        return {} 
+        # return self.online_items.get('tls_psk', '')
+
+    @groups.setter
+    def groups(self, value):
+        pass
+        # pprint('GOT')
+        # pprint(value)
+        # self.online_items['groups'] = value
+
+
 
 
     def interface_inventory(self, interfaces):
@@ -521,9 +581,9 @@ class zbxhost(core.zbx):
 
 
     def interface_mains(self):
-        for itype in self.interfaces.keys():
-            if not 1 in [ifac.main for ifac in self.interfaces[itype]] and len(self.interfaces[itype]) >= 1:
-                self.interfaces[itype][0].main = 1
+        for itype in self.interfaceobjects.keys():
+            if not 1 in [ifac.main for ifac in self.interfaceobjects[itype]] and len(self.interfaceobjects[itype]) >= 1:
+                self.interfaceobjects[itype][0].main = 1
 
 
 
@@ -533,27 +593,24 @@ class zbxhost(core.zbx):
         idx = interface.type
         if not tid :
             # pprint(interface.get('hostcreate'))
-            if not self.interfaces.get(idx, False):
-                self.interfaces[idx] = list()
+            if not self.interfaceobjects.get(idx, False):
+                self.interfaceobjects[idx] = list()
         
-            self.interfaces[idx].append(interface)
+            self.interfaceobjects[idx].append(interface)
             interface.add_host(self)
 
 
-
-
-
     def del_interface(self, tid, tidx):
-        del self.interfaces[tid][tidx]
-        if len(self.interfaces[tid]) == 0:
-            del self.interfaces[tid]
+        del self.interfaceobjects[tid][tidx]
+        if len(self.interfaceobjects[tid]) == 0:
+            del self.interfaceobjects[tid]
 
 
     def search_interface(self, host=None, port=None, searchtype='both'):
         retval_typeid = None
         retval_index = None
-        for typeid in self.interfaces.keys():
-            for interfaceobject in self.interfaces[typeid]:
+        for typeid in self.interfaceobjects.keys():
+            for interfaceobject in self.interfaceobjects[typeid]:
                 ok = False
                 if searchtype == 'both':
                     ok = interfaceobject.host == host and interfaceobject.port == str(port)
@@ -564,7 +621,7 @@ class zbxhost(core.zbx):
 
                 if ok:
                     retval_typeid = typeid
-                    retval_index  = self.interfaces[typeid].index(interfaceobject)
+                    retval_index  = self.interfaceobjects[typeid].index(interfaceobject)
                     break
 
             if retval_typeid:
@@ -579,7 +636,45 @@ class zbxhost(core.zbx):
     def add_template(self, template):
         self.templates[template.name] = template
 
-    def get(self, param_type=None):
+
+
+    def get_update_modifier(self, value):
+        if self.id:
+            value['hostid'] = self.id
+            # pprint(self.interfaceobjects)
+            # if type(self.interfaceobjects) == list:
+            value['interfaces'] = [{"interfaceid": interface_instance.id} for iftypeid in self.interfaceobjects for interface_instance in self.interfaceobjects[iftypeid]]
+            if len(value['interfaces']) == 0:
+                del value['interfaces']
+            value['groups'] = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
+            if len(value['groups']) == 0:
+                del value['groups']
+            value['templates'] = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
+            if len(value['templates']) == 0:
+                del value['templates']
+
+            # ass = [{"interfaceid": interface_instance.id} for iftypeid in self.interfaceobjects for interface_instance in self.interfaceobjects[iftypeid]]
+            # sdf = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
+            # zxcv = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
+
+        return value
+
+    def get_create_modifier(self, value):
+        self.interface_mains()
+        # pprint(value)
+        # pprint(type(value))
+        value['interfaces'] = [interface_instance.get('hostcreate')[1] for iftypeid in self.interfaceobjects for interface_instance in self.interfaceobjects[iftypeid]]
+        value['groups'] = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
+        value['templates'] = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
+        # qq = [interface_instance.get('hostcreate')[1] for iftypeid in self.interfaceobjects for interface_instance in self.interfaceobjects[iftypeid]]
+        # qq = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
+        # qq = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
+       
+        return value
+
+
+
+    def get_depr(self, param_type=None):
         retval = dict()
         if not param_type:
             if self.id:
@@ -595,7 +690,7 @@ class zbxhost(core.zbx):
             self.interface_mains()
 
             retval = dict(self.online_items)
-            retval['interfaces'] = [interface_instance.get('hostcreate')[1] for iftypeid in self.interfaces for interface_instance in self.interfaces[iftypeid]]
+            retval['interfaces'] = [interface_instance.get('hostcreate')[1] for iftypeid in self.interfaceobjects.keys() for interface_instance in self.interfaceobjects[iftypeid]]
             retval['groups'] = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
             retval['templates'] = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
 
@@ -604,7 +699,7 @@ class zbxhost(core.zbx):
                 return [False, retval]
             retval = dict(self.mergediff)
             retval['hostid'] = self.id
-            retval['interfaces'] = [{"interfaceid": interface_instance.id} for iftypeid in self.interfaces for interface_instance in self.interfaces[iftypeid]]
+            retval['interfaces'] = [{"interfaceid": interface_instance.id} for iftypeid in self.interfaceobjects for interface_instance in self.interfaceobjects[iftypeid]]
             retval['groups'] = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
             retval['templates'] = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
 

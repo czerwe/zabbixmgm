@@ -203,10 +203,10 @@ class zbxinterface(core.zbx):
 
     @bulk.setter
     def bulk(self, value):
-        if value in [zbxinterface.BULK_ON, zbxinterface.BULK_OFF]:
-            self.online_items['bulk'] = value
+        if int(value) in [zbxinterface.BULK_ON, zbxinterface.BULK_OFF]:
+            self.online_items['bulk'] = int(value)
         else:
-            raise core.InvalidFieldValue(message='{0} is not a supported interface type'.format(value), status=2)
+            raise core.InvalidFieldValue(message='{0} is not a supported interface bulk type'.format(value), status=2)
 
     @property
     def mask(self):
