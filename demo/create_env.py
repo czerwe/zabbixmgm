@@ -10,7 +10,8 @@ zapi = ZabbixAPI(url='http://localhost', user='Admin', password='zabbix')
 
 def create_group(groupname):
     resp = zabbixmgm.query_group_by_name(zapi, groupname)
-    grp = zabbixmgm.zbxgroup(zapi, groupname, resp)
+    pprint(resp)
+    grp = zabbixmgm.zbxgroup(zapi, name=groupname, mask=resp)
 
     if not grp.id:
         cmd, param = grp.get()
@@ -21,7 +22,7 @@ def create_group(groupname):
 
 def create_application(appname, host):
     resp = zabbixmgm.query_application_by_name(zapi, appname)
-    retApp = zabbixmgm.zbxapplication(zapi, appname, resp)
+    retApp = zabbixmgm.zbxapplication(zapi, name=appname, mask=resp)
     if not retApp.id:
         retApp.add_host(host)
         cmd, param = retApp.get()
@@ -30,10 +31,8 @@ def create_application(appname, host):
 
 
 def get_template(templatename, group, subtemplates=list()):
-    resp = zabbixmgm.query_template_by_name(zapi, templatename)
-
-    retTemplate = zabbixmgm.zbxtemplate(zapi, templatename, resp)
-    
+    resp = zabbixmgm.query_template_by_name(zapi, name=templatename)
+    retTemplate = zabbixmgm.zbxtemplate(zapi, name=templatename, mask=resp)
     retTemplate.add_group(group)
     for i in subtemplates:
         retTemplate.add_template(i)
@@ -65,7 +64,7 @@ def commit_template(tempalte):
 
 def get_item(itemname, host, app):
     res = zabbixmgm.query_item_by_name_and_host(zapi, itemname, host.id)
-    retItem = zabbixmgm.zbxitem(zapi, itemname, res)
+    retItem = zabbixmgm.zbxitem(zapi, name=itemname, mask=res)
     retItem.delay = 30
     retItem.value_type = zabbixmgm.zbxitem.VAL_TYPE_NUMERIC_FLOAT
     retItem.add_host(host)
@@ -85,7 +84,7 @@ def commit_host(host):
 
 def get_host(hostname, group):
     resp = zabbixmgm.query_host_by_name(zapi, hostname)
-    retHost = zabbixmgm.zbxhost(zapi, hostname, resp)
+    retHost = zabbixmgm.zbxhost(zapi, name=hostname, mask=resp)
     retHost.add_group(group)
     
     if not retHost.id:
@@ -110,7 +109,7 @@ class eventCorrelator(object):
     def __init__(self):
         self.app_short_name = 'EC'
         template_response = zabbixmgm.query_template_by_name(zapi,'Template OS Linux')
-        tpl_oslinux = zabbixmgm.zbxtemplate(zapi, mask=template_response)
+        tpl_oslinux = zabbixmgm.zbxtemplate(zapi, mask=template_response, name='blub')
 
         self.group = create_group("MCng Backend")
         self.template = get_template("Template MCng EventCorrelator", self.group, [tpl_oslinux]) 

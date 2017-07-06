@@ -61,10 +61,9 @@ class zbxitem(core.zbx):
 
 
 
-    def __init__(self, api, itemmask=None, **kwargs):
+    def __init__(self, api, **kwargs):
         super(zbxitem, self).__init__(api)
 
-        self.name = name
         self.applications = dict()
         self.host = None
 
@@ -135,12 +134,8 @@ class zbxitem(core.zbx):
             'state'
         ]
 
-        if itemmask:
-            self.merge(itemmask)
-
-        
         for att in kwargs.keys():
-            if att in self.difffields:
+            if att in self.difffields + ['itemid', 'mask']:
                 setattr(self, att, kwargs[att])
             else:
                 raise core.WrongType('{0} is not a valid argument'.format(att), 5)
@@ -168,7 +163,8 @@ class zbxitem(core.zbx):
 
     @itemid.setter
     def itemid(self, value):
-        raise core.ReadOnlyField('itemid is an readonly field')
+        self.online_items['itemid'] = int(value)
+        # raise core.ReadOnlyField('itemid is an readonly field')
 
 
     @property
@@ -288,7 +284,8 @@ class zbxitem(core.zbx):
 
     @itemid.setter
     def error(self, value):
-        raise core.ReadOnlyField('error is an readonly field')
+        self.online_items['error'] = str(value)
+        # raise core.ReadOnlyField('error is an readonly field')
 
 
     @property
@@ -297,7 +294,8 @@ class zbxitem(core.zbx):
 
     @itemid.setter
     def flags(self, value):
-        raise core.ReadOnlyField('flags is an readonly field')
+        self.online_items['flags'] = int(value)
+        # raise core.ReadOnlyField('flags is an readonly field')
 
 
     @property
@@ -346,7 +344,9 @@ class zbxitem(core.zbx):
 
     @lastclock.setter
     def lastclock(self, value):
-        raise core.ReadOnlyField('lastclock is an readonly field')
+        self.online_items['lastclock'] = str(value)
+        # return self.online_items.get('lastclock', '')
+        # raise core.ReadOnlyField('lastclock is an readonly field')
         
 
     @property
@@ -355,7 +355,8 @@ class zbxitem(core.zbx):
 
     @lastns.setter
     def lastns(self, value):
-        raise core.ReadOnlyField('lastns is an readonly field')
+        self.online_items['lastns'] = str(value)
+        # raise core.ReadOnlyField('lastns is an readonly field')
         
 
     @property
@@ -364,7 +365,8 @@ class zbxitem(core.zbx):
 
     @lastvalue.setter
     def lastvalue(self, value):
-        raise core.ReadOnlyField('lastvalue is an readonly field')
+        self.online_items['lastvalue'] = str(value)
+        # raise core.ReadOnlyField('lastvalue is an readonly field')
         
 
     @property
@@ -433,7 +435,8 @@ class zbxitem(core.zbx):
 
     @prevvalue.setter
     def prevvalue(self, value):
-        raise core.ReadOnlyField('prevvalue is an readonly field')
+        self.online_items['prevvalue'] = str(value)
+        # raise core.ReadOnlyField('prevvalue is an readonly field')
         
 
     @property
@@ -571,7 +574,9 @@ class zbxitem(core.zbx):
 
     @templateid.setter
     def templateid(self, value):
-        raise core.ReadOnlyField('templateid is an readonly field')
+        self.online_items['templateid'] = str(value)
+        # return self.online_items.get('templateid', '')
+        # raise core.ReadOnlyField('templateid is an readonly field')
         
         
     @property

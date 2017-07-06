@@ -61,7 +61,7 @@ class zbxhost(core.zbx):
         super(zbxhost, self).__init__(api)
 
         self.interfaceobjects = dict()
-        self.groups = dict()
+        self.groupopjects = dict()
         self.templates = dict()
         # self.update()
 
@@ -197,16 +197,6 @@ class zbxhost(core.zbx):
         
         self.mergediff['name'] = value
 
-
-    @property
-    def mask(self):
-        return self.get_attrs(withreadonly=True, verify=False)
-
-    @mask.setter
-    def mask(self, value):
-        for passed_key in value.keys():
-            setattr(self, passed_key, value[passed_key])
-
     @property
     def available(self):
         return self.online_items.get('available', 0)
@@ -287,10 +277,10 @@ class zbxhost(core.zbx):
 
     @ipmi_authtype.setter
     def ipmi_authtype(self, value):
-        if value in [zbxhost.IPMI_AUTHTYPE_DEFAULT, zbxhost.IPMI_AUTHTYPE_NONE, zbxhost.IPMI_AUTHTYPE_MD2, zbxhost.IPMI_AUTHTYPE_MD5, zbxhost.IPMI_AUTHTYPE_STRAIGHT, zbxhost.IPMI_AUTHTYPE_OEM, zbxhost.IPMI_AUTHTYPE_RMCP]:
+        if int(value) in [zbxhost.IPMI_AUTHTYPE_DEFAULT, zbxhost.IPMI_AUTHTYPE_NONE, zbxhost.IPMI_AUTHTYPE_MD2, zbxhost.IPMI_AUTHTYPE_MD5, zbxhost.IPMI_AUTHTYPE_STRAIGHT, zbxhost.IPMI_AUTHTYPE_OEM, zbxhost.IPMI_AUTHTYPE_RMCP]:
             self.online_items['ipmi_authtype'] = int(value)
         else:
-            raise core.InvalidFieldValue(message='{0} is not a supported ipmi_authtype'.format(value), status=2)
+            raise core.InvalidFieldValue(message='{0} ({1})is not a supported ipmi_authtype'.format(value, type(value)), status=2)
 
 
     @property
@@ -349,10 +339,10 @@ class zbxhost(core.zbx):
 
     @ipmi_privilege.setter
     def ipmi_privilege(self, value):
-        if value in [zbxhost.IPMI_PRIVILEGE_CALLBACK, zbxhost.IPMI_PRIVILEGE_USER, zbxhost.IPMI_PRIVILEGE_OPERATOR, zbxhost.IPMI_PRIVILEGE_ADMIN, zbxhost.IPMI_PRIVILEGE_OEM]:
+        if int(value) in [zbxhost.IPMI_PRIVILEGE_CALLBACK, zbxhost.IPMI_PRIVILEGE_USER, zbxhost.IPMI_PRIVILEGE_OPERATOR, zbxhost.IPMI_PRIVILEGE_ADMIN, zbxhost.IPMI_PRIVILEGE_OEM]:
             self.online_items['ipmi_privilege'] = int(value)
         else:
-            raise core.InvalidFieldValue(message='{0} is not a supported ipmi_privilege'.format(value), status=2)
+            raise core.InvalidFieldValue(message='{0} {1}is not a supported ipmi_privilege'.format(value, type(value)), status=2)
         
     
     @property
@@ -542,7 +532,7 @@ class zbxhost(core.zbx):
     @tls_psk.setter
     def tls_psk(self, value):
         self.online_items['tls_psk'] = value
-        self.mergediff['tls_psk'] = valueo
+        self.mergediff['tls_psk'] = value
 
 
     @property
@@ -631,7 +621,9 @@ class zbxhost(core.zbx):
 
 
     def add_group(self, group):
-        self.groups[group.name] = group
+        self.groupopjects[group.name] = group
+        pprint(group)
+        pprint(self)
 
     def add_template(self, template):
         self.templates[template.name] = template
@@ -646,7 +638,7 @@ class zbxhost(core.zbx):
             value['interfaces'] = [{"interfaceid": interface_instance.id} for iftypeid in self.interfaceobjects for interface_instance in self.interfaceobjects[iftypeid]]
             if len(value['interfaces']) == 0:
                 del value['interfaces']
-            value['groups'] = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
+            value['groups'] = [{"groupid": self.groupopjects[groupname].id} for groupname in self.groupopjects]
             if len(value['groups']) == 0:
                 del value['groups']
             value['templates'] = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
@@ -663,8 +655,9 @@ class zbxhost(core.zbx):
         self.interface_mains()
         # pprint(value)
         # pprint(type(value))
+        pprint(self.groupopjects)
         value['interfaces'] = [interface_instance.get('hostcreate')[1] for iftypeid in self.interfaceobjects for interface_instance in self.interfaceobjects[iftypeid]]
-        value['groups'] = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
+        value['groups'] = [{"groupid": self.groupopjects[groupname].id} for groupname in self.groupopjects]
         value['templates'] = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
         # qq = [interface_instance.get('hostcreate')[1] for iftypeid in self.interfaceobjects for interface_instance in self.interfaceobjects[iftypeid]]
         # qq = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
@@ -672,51 +665,3 @@ class zbxhost(core.zbx):
        
         return value
 
-
-
-    def get_depr(self, param_type=None):
-        retval = dict()
-        if not param_type:
-            if self.id:
-                param_type = 'update'
-            else:
-                param_type = 'create'
-
-
-        if param_type == 'create':
-            if self.id:
-                return [False, retval]
-            
-            self.interface_mains()
-
-            retval = dict(self.online_items)
-            retval['interfaces'] = [interface_instance.get('hostcreate')[1] for iftypeid in self.interfaceobjects.keys() for interface_instance in self.interfaceobjects[iftypeid]]
-            retval['groups'] = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
-            retval['templates'] = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
-
-        if param_type == 'update':
-            if not self.id:
-                return [False, retval]
-            retval = dict(self.mergediff)
-            retval['hostid'] = self.id
-            retval['interfaces'] = [{"interfaceid": interface_instance.id} for iftypeid in self.interfaceobjects for interface_instance in self.interfaceobjects[iftypeid]]
-            retval['groups'] = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
-            retval['templates'] = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
-
-
-        if param_type in ['create', 'update']:
-            for param in retval.keys():
-                if param in self.readonlyfields:
-                    if param_type == 'update' and param == 'hostid':
-                        continue
-                    else:
-                        del retval[param]
-
-
-        elif param_type == 'delete':
-            if self.id:
-                retval = [self.id]
-            else:
-                retval = list()
-
-        return [self.apicommands[param_type], retval]

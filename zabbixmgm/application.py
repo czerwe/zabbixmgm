@@ -1,5 +1,6 @@
 import core
 import host
+import template
 
 from pprint import pprint
 
@@ -11,8 +12,6 @@ class zbxapplication(core.zbx):
     def __init__(self, api, **kwargs):
         super(zbxapplication, self).__init__(api)
         self.host = None
-
-
 
         self.difffields = ['applicationid',
                            'hostid',
@@ -122,7 +121,7 @@ class zbxapplication(core.zbx):
 
 
     def add_host(self, hostinstance):
-        if type(hostinstance) == host.zbxhost:
+        if type(hostinstance) == host.zbxhost or type(hostinstance) == template.zbxtemplate :
             self.host = hostinstance
             self.hostid = hostinstance.id
         else:

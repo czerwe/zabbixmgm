@@ -50,6 +50,50 @@ inf40_response = {u'bulk': u'1',
 }
 
 
+fullhost = {u'available': u'0',
+ u'description': u'',
+ u'disable_until': u'0',
+ u'error': u'',
+ u'errors_from': u'0',
+ u'flags': u'0',
+ u'groups': [{u'groupid': u'2', u'name': u'Linux servers'}],
+ u'host': u'myhost.local',
+ u'hostid': u'10105',
+ u'interfaces': [{u'interfaceid': u'2'}],
+ u'ipmi_authtype': u'-1',
+ u'ipmi_available': u'0',
+ u'ipmi_disable_until': u'0',
+ u'ipmi_error': u'',
+ u'ipmi_errors_from': u'0',
+ u'ipmi_password': u'',
+ u'ipmi_privilege': u'2',
+ u'ipmi_username': u'',
+ u'jmx_available': u'0',
+ u'jmx_disable_until': u'0',
+ u'jmx_error': u'',
+ u'jmx_errors_from': u'0',
+ u'lastaccess': u'0',
+ u'maintenance_from': u'0',
+ u'maintenance_status': u'0',
+ u'maintenance_type': u'0',
+ u'maintenanceid': u'0',
+ u'name': u'myhost.local',
+ u'parentTemplates': [],
+ u'proxy_hostid': u'0',
+ u'snmp_available': u'0',
+ u'snmp_disable_until': u'0',
+ u'snmp_error': u'',
+ u'snmp_errors_from': u'0',
+ u'status': u'0',
+ u'templateid': u'0',
+ u'tls_accept': u'1',
+ u'tls_connect': u'1',
+ u'tls_issuer': u'',
+ u'tls_psk': u'',
+ u'tls_psk_identity': u'',
+ u'tls_subject': u''}
+
+
 
 
 
@@ -414,6 +458,13 @@ class host_tests(unittest2.TestCase):
         self.assertTrue('interfaces' in param.keys())
         self.assertEqual(len(param['interfaces']), 1, 'interface should be 1 but isn\'t')
         self.assertTrue({'interfaceid': '38'} in param['interfaces'], 'Wrong interface listed')
+
+
+    def test_host_mask_all(self):
+        thost = zabbixmgm.zbxhost(self.apimock, mask=fullhost)
+
+        
+
 
 
     # def test_host_interface_upon_update_2inf(self):

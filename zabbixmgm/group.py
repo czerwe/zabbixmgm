@@ -32,12 +32,10 @@ class zbxgroup(core.zbx):
             self.merge(groupmask)
 
         for att in kwargs.keys():
-            if att in self.difffields:
+            if att in self.difffields + ['mask']:
                 setattr(self, att, kwargs[att])
             else:
                 raise core.WrongType('{0} is not a valid argument'.format(att), 5)
-
-
 
     @property
     def id(self):
@@ -59,9 +57,10 @@ class zbxgroup(core.zbx):
     def groupid(self):
         return self.online_items.get('groupid', None)
     
+
     @groupid.setter
     def groupid(self, value):
-        raise core.ReadOnlyField('groupid is an readonly field')
+        self.online_items['groupid'] = int(value)
 
 
     @property
@@ -80,8 +79,7 @@ class zbxgroup(core.zbx):
     
     @flags.setter
     def flags(self, value):
-        raise core.ReadOnlyField('flags is an readonly field')
-
+        self.online_items['flags'] = str(value)
 
     @property
     def internal(self):
@@ -89,40 +87,15 @@ class zbxgroup(core.zbx):
     
     @internal.setter
     def internal(self, value):
-        raise core.ReadOnlyField('internal is an readonly field')
+        self.online_items['internal'] = str(value)
 
 
-    def get(self, param_type=None):
-        
-        if not param_type:
-            if self.id:
-                param_type = 'update'
-            else:
-                param_type = 'create'
-        
-        if param_type == 'create':
-            if self.id:
-                return [False, {}]
-            retval = dict(self.online_items)
-        
-        if param_type == 'update':
-            if not self.id:
-                return [False, {}]
-            retval = dict(self.mergediff)
-            retval['groupid'] = self.id
+    def get_update_modifier(self, value):
+        if self.interfaceid:
+            value['groupid'] = self.groupid
+        return value
 
-        if param_type == 'delete':
-            if self.id:
-                retval = [self.id]
-            else:
-                retval = list()
+    def get_create_modifier(self, value):
+        return value
 
-        if param_type in ['create', 'update']:
-            for param in retval.keys():
-                if param in self.readonlyfields:
-                    if param_type == 'update' and param == 'groupid':
-                        continue
-                    else:
-                        del retval[param]
-
-        return [self.apicommands[param_type], retval]
+    # def get(self, param_type=None): 

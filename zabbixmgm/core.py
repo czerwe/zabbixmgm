@@ -37,6 +37,17 @@ class zbx(object):
         self.readonlyfields = list()
         self.required_fields = list()
 
+
+    @property
+    def mask(self):
+        return self.get_attrs(withreadonly=True, verify=False)
+
+    @mask.setter
+    def mask(self, value):
+        for passed_key in value.keys():
+            setattr(self, passed_key, value[passed_key])
+
+
     def diff(self, iface):
         """
         Searches differences between the current zbxdata and an passed zbxdata.
@@ -112,7 +123,8 @@ class zbx(object):
                 param_type = 'update'
             else:
                 param_type = 'create'
-
+        pprint(self.id)
+        pprint(param_type)
         if param_type == 'create':
             if self.id:
                 return [None, {}]

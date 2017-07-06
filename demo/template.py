@@ -11,7 +11,11 @@ zapi = ZabbixAPI(url='http://localhost', user='Admin', password='zabbix')
 
 app = zabbixmgm.zbxapplication(zapi, mask={'name': '232'})
 
-pprint(app.get_attrs())
+sss = zabbixmgm.query_host_by_name(zapi, 'myhost.local')
+
+
+
+pprint(sss)
 # pprint(blub.get_attrs(True))
 
 # blub = zabbixmgm.zbxhost(zapi, "test", {'hostid': '232'})
