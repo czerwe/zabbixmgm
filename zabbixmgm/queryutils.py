@@ -95,11 +95,13 @@ def query_item_by_name_and_host(api, name, host):
         'output': 'extend',
         'filter': {
             'name': [name],
-            'hosts': [host]
+            'hostid': host
+            
         },
     }
-
+    pprint(params)
     result = api.do_request('item.get', params)['result']
+    pprint(result)
     if len(result) >= 1:
         return result[0]
     else:
@@ -115,10 +117,30 @@ def query_items_from_hostid(api, host):
         # },
     }
 
-    pprint(params)
+    # pprint(params)
 
     result = api.do_request('item.get', params)['result']
     if len(result) >= 1:
         return result
     else:
         return {}
+
+def query_num_of_interface_types(api, host, itype):
+    params = {
+        'output': 'extend',
+        'hostids': [host],
+        'filter': {
+            'type': itype,
+        },
+    }
+
+    # pprint(params)
+
+    result = api.do_request('hostinterface.get', params)['result']
+    
+    return len(result)
+    # if  >= 1:
+    #     return result
+    # else:
+    #     return {}
+

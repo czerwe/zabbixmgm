@@ -32,7 +32,7 @@ class template_tests(unittest2.TestCase):
     def test_template_masking(self):
         mask = {'available': u'0', 'status': u'3', 'templateid': u'10001'}
 
-        ttemplate = zabbixmgm.zbxtemplate(self.apimock, mask, name='mytemplate')
+        ttemplate = zabbixmgm.zbxtemplate(self.apimock, mask=mask, name='mytemplate')
 
         self.assertEqual(ttemplate.id, '10001')
         self.assertEqual(ttemplate.templateid, '10001')

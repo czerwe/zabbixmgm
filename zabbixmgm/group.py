@@ -91,7 +91,7 @@ class zbxgroup(core.zbx):
 
 
     def get_update_modifier(self, value):
-        if self.interfaceid:
+        if self.id:
             value['groupid'] = self.groupid
         return value
 

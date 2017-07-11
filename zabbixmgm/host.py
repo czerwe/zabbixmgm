@@ -437,7 +437,7 @@ class zbxhost(core.zbx):
 
     @property
     def proxy_hostid(self):
-        return self.online_items.get('proxy_hostid', '')
+        return self.online_items.get('proxy_hostid', None)
 
     @proxy_hostid.setter
     def proxy_hostid(self, value):

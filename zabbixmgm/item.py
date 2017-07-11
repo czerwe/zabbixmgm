@@ -92,6 +92,7 @@ class zbxitem(core.zbx):
             'formula',
             'history',
             'inventory_link',
+            'jmx_endpoint',
             'ipmi_sensor',
             'lastclock',
             'lastns',
@@ -217,6 +218,19 @@ class zbxitem(core.zbx):
         self.mergediff['type'] = int(value)
 
 
+
+    @property
+    def jmx_endpoint(self):
+        if self.type == zbxitem.TYPE_JMX_AGENT:
+            return self.online_items.get('jmx_endpoint', str())
+        else:
+            return None
+
+    @jmx_endpoint.setter
+    def jmx_endpoint(self, value):
+        self.online_items['jmx_endpoint'] = str(value)
+
+
     @property
     def value_type(self):
         return self.online_items.get('value_type', zbxitem.VAL_TYPE_NUMERIC_FLOAT)
@@ -304,18 +318,19 @@ class zbxitem(core.zbx):
 
     @formula.setter
     def formula(self, value):
-        self.online_items['formula'] = float(value)
-        self.mergediff['formula'] = float(value)
+        if len(value) > 0:
+            self.online_items['formula'] = float(value)
+            self.mergediff['formula'] = float(value)
 
 
     @property
     def history(self):
-        return self.online_items.get('history', 90)
+        return self.online_items.get('history', '90d')
 
     @history.setter
     def history(self, value):
-        self.online_items['history'] = int(value)
-        self.mergediff['history'] = int(value)
+        self.online_items['history'] = str(value)
+        self.mergediff['history'] = str(value)
 
 
     @property
@@ -495,8 +510,8 @@ class zbxitem(core.zbx):
 
     @snmpv3_authprotocol.setter
     def snmpv3_authprotocol (self, value):
-        self.online_items['snmpv3_authprotocol'] = item(value)
-        self.mergediff['snmpv3_authprotocol'] = item(value)
+        self.online_items['snmpv3_authprotocol'] = int(value)
+        self.mergediff['snmpv3_authprotocol'] = int(value)
         
 
     @property
@@ -525,8 +540,8 @@ class zbxitem(core.zbx):
 
     @snmpv3_privprotocol.setter
     def snmpv3_privprotocol (self, value):
-        self.online_items['snmpv3_privprotocol'] = item(value)
-        self.mergediff['snmpv3_privprotocol'] = item(value)
+        self.online_items['snmpv3_privprotocol'] = int(value)
+        self.mergediff['snmpv3_privprotocol'] = int(value)
         
 
     @property
@@ -535,8 +550,8 @@ class zbxitem(core.zbx):
 
     @snmpv3_securitylevel.setter
     def snmpv3_securitylevel (self, value):
-        self.online_items['snmpv3_securitylevel'] = item(value)
-        self.mergediff['snmpv3_securitylevel'] = item(value)
+        self.online_items['snmpv3_securitylevel'] = int(value)
+        self.mergediff['snmpv3_securitylevel'] = int(value)
         
 
     @property
@@ -591,12 +606,12 @@ class zbxitem(core.zbx):
 
     @property
     def trends(self):
-        return self.online_items.get('trends', 365)
+        return self.online_items.get('trends', '365d')
 
     @trends.setter
     def trends(self, value):
-        self.online_items['trends'] = int(value)
-        self.mergediff['trends'] = int(value)
+        self.online_items['trends'] = str(value)
+        # self.mergediff['trends'] = str(value)
         
 
     @property

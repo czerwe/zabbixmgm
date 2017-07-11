@@ -1,6 +1,7 @@
 import core
 import host
 import re
+import logging
 from pprint import pprint
 class zbxinterface(core.zbx):
 
@@ -14,6 +15,8 @@ class zbxinterface(core.zbx):
 
     def __init__(self, api, **kwargs): 
         super(zbxinterface, self).__init__(api)
+        # self.logger = logger or logging.getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
         self.difffields = ['interfaceid', 'useip', 'ip', 'dns', 'port', 'bulk', 'type', 'hostid', 'main']
        
         self.readonlyfields = ['interfaceid']
@@ -215,6 +218,7 @@ class zbxinterface(core.zbx):
     @mask.setter
     def mask(self, value):
         for passed_key in value.keys():
+            self.logger.debug('Got {0} with value {1}({2})'.format(passed_key, value[passed_key], type(value[passed_key])))
             setattr(self, passed_key, value[passed_key])
         # self.merge(value)
 
