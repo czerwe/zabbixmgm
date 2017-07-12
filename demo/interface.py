@@ -8,9 +8,8 @@ from zabbix.api import ZabbixAPI
 
 zapi = ZabbixAPI(url='http://localhost', user='Admin', password='zabbix')
 
-host1_inf = zabbixmgm.zbxinterface(zapi, mask={'blub': 'sdfs'})
-
-
+host1_inf = zabbixmgm.zbxinterface(zapi, mask={'blub': 'sdfs', 'hostid': 33434})
+host1_inf.get()
 
 # groupname = 'autogroup'
 # grp = zabbixmgm.zbxgroup(zapi, groupname, zabbixmgm.query_group_by_name(zapi, groupname))

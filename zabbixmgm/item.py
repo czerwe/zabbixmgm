@@ -1,4 +1,5 @@
 import core
+import logging
 
 
 class zbxitem(core.zbx):

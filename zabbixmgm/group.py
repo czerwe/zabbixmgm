@@ -1,4 +1,5 @@
 import core
+import logging
 from pprint import pprint
 
 class zbxgroup(core.zbx):
@@ -12,6 +13,7 @@ class zbxgroup(core.zbx):
     def __init__(self, api, groupmask=None, **kwargs):
         super(zbxgroup, self).__init__(api)
 
+        self.logger = logging.getLogger(__name__)
         self.difffields = [
                             'groupid',
                             'name',
@@ -27,10 +29,7 @@ class zbxgroup(core.zbx):
             'update': 'hostgroup.update',
             'delete': 'hostgroup.delete',
         }
-
-        if groupmask:
-            self.merge(groupmask)
-
+        
         for att in kwargs.keys():
             if att in self.difffields + ['mask']:
                 setattr(self, att, kwargs[att])

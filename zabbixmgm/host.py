@@ -1,7 +1,9 @@
 import core
 import interface
 import group
+import template
 import re
+import logging
 
 from pprint import pprint
 
@@ -60,6 +62,7 @@ class zbxhost(core.zbx):
     def __init__(self, api, **kwargs):
         super(zbxhost, self).__init__(api)
 
+        self.logger = logging.getLogger(__name__)
         self.interfaceobjects = dict()
         self.groupopjects = dict()
         self.templates = dict()
@@ -181,7 +184,7 @@ class zbxhost(core.zbx):
         if not self.name:
             self.name = value
 
-        self.mergediff['host'] = value
+        # self.mergediff['host'] = value
 
 
     @property
@@ -195,7 +198,7 @@ class zbxhost(core.zbx):
         if not self.host:
             self.host = value
         
-        self.mergediff['name'] = value
+        # self.mergediff['name'] = value
 
     @property
     def available(self):
@@ -214,7 +217,7 @@ class zbxhost(core.zbx):
     @description.setter
     def description(self, value):
         self.online_items['description'] = value
-        self.mergediff['description'] = value
+        # self.mergediff['description'] = value
 
 
     @property
@@ -492,7 +495,7 @@ class zbxhost(core.zbx):
     @status.setter
     def status(self, value):
         self.online_items['status'] = int(value)
-        self.mergediff['status'] = value
+        # self.mergediff['status'] = value
 
 
     @property
@@ -502,7 +505,7 @@ class zbxhost(core.zbx):
     @tls_issuer.setter
     def tls_issuer(self, value):
         self.online_items['tls_issuer'] = value
-        self.mergediff['tls_issuer'] = value
+        # self.mergediff['tls_issuer'] = value
 
 
     @property
@@ -512,7 +515,7 @@ class zbxhost(core.zbx):
     @tls_subject.setter
     def tls_subject(self, value):
         self.online_items['tls_subject'] = value
-        self.mergediff['tls_subject'] = value
+        # self.mergediff['tls_subject'] = value
 
 
     @property
@@ -522,7 +525,7 @@ class zbxhost(core.zbx):
     @tls_psk_identity.setter
     def tls_psk_identity(self, value):
         self.online_items['tls_psk_identity'] = value
-        self.mergediff['tls_psk_identity'] = value
+        # self.mergediff['tls_psk_identity'] = value
 
 
     @property
@@ -532,7 +535,7 @@ class zbxhost(core.zbx):
     @tls_psk.setter
     def tls_psk(self, value):
         self.online_items['tls_psk'] = value
-        self.mergediff['tls_psk'] = value
+        # self.mergediff['tls_psk'] = value
 
 
     @property
@@ -562,8 +565,6 @@ class zbxhost(core.zbx):
         # self.online_items['groups'] = value
 
 
-
-
     def interface_inventory(self, interfaces):
         for single_interface in interfaces:
             tmpint = interface.zbxinterface(self.api, single_interface['name'], single_interface)
@@ -577,17 +578,27 @@ class zbxhost(core.zbx):
 
 
 
-    def add_interface(self, interface):
-        tid, tidx = self.search_interface(host=interface.host, port=interface.port)
-        # pprint([tid, tidx])
-        idx = interface.type
+    def add_interface(self, interfaceobject):
+        if not type(interfaceobject) == interface.zbxinterface:
+            self.logger.error('passed interfaceobject is not the correct type must be zbxinterface but is {0}'.format(type(groupobject)))
+            return False
+
+        tid, tidx = self.search_interface(host=interfaceobject.host, port=interfaceobject.port)
+        self.logger.info('Interface {host}:{port} already exist in current configuration'.format(host=interfaceobject.host, port=interfaceobject.port)) 
+        idx = interfaceobject.type
         if not tid :
-            # pprint(interface.get('hostcreate'))
             if not self.interfaceobjects.get(idx, False):
+                self.logger.debug('First interface of type {0}'.format(idx))
                 self.interfaceobjects[idx] = list()
         
-            self.interfaceobjects[idx].append(interface)
-            interface.add_host(self)
+            # self.logger.debug('Append interface {0}'.format(idx))
+            self.interfaceobjects[idx].append(interfaceobject)
+            interfaceobject.add_host(self)
+            return True
+        else:
+            self.logger.warning('Interface {host}:{port} not added'.format(host=interfaceobject.host, port=interfaceobject.port)) 
+            
+        return False
 
 
     def del_interface(self, tid, tidx):
@@ -620,24 +631,111 @@ class zbxhost(core.zbx):
         return [retval_typeid, retval_index]
 
 
-    def add_group(self, group):
-        self.groupopjects[group.name] = group
-        pprint(group)
-        pprint(self)
+    def add_group(self, groupobject):
+        if not type(groupobject) == group.zbxgroup:
+            self.logger.error('passed groupobject is not the correct type must be zbxgroup but is {0}'.format(type(groupobject)))
+            return False
 
-    def add_template(self, template):
-        self.templates[template.name] = template
+        self.logger.info('Added group {0} (id: {1})'.format(groupobject.name, groupobject.id))
+        self.groupopjects[groupobject.name] = groupobject
+        return True
+
+
+    def add_template(self, templateobject):
+        if type(templateobject) == template.zbxtemplate:
+            self.logger.error('passed templateobject is not the correct type must be zbxtemplate but is {0}'.format(type(groupobject)))
+            
+        self.templates[templateobject.name] = templateobject
 
 
 
     def get_update_modifier(self, value):
         if self.id:
             value['hostid'] = self.id
-            # pprint(self.interfaceobjects)
-            # if type(self.interfaceobjects) == list:
+
             value['interfaces'] = [{"interfaceid": interface_instance.id} for iftypeid in self.interfaceobjects for interface_instance in self.interfaceobjects[iftypeid]]
+            self.logger.debug('Added {0} interfaces'.format(len(value['interfaces'])))
             if len(value['interfaces']) == 0:
                 del value['interfaces']
+
+            value['groups'] = [{"groupid": self.groupopjects[groupname].id} for groupname in self.groupopjects]
+            self.logger.debug('Added {0} groups'.format(len(value['groups'])))
+            if len(value['groups']) == 0:
+                del value['groups']
+
+            value['templates'] = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
+            self.logger.debug('Added {0} templates'.format(len(value['templates'])))
+            if len(value['templates']) == 0:
+                del value['templates']
+        else:
+            self.logger.warning('get_update_modifier called even if not hostid is available')
+
+        return value
+
+    def get_create_modifier(self, value):
+        if not self.id:
+            self.interface_mains()
+            value['interfaces'] = [interface_instance.get('hostcreate')[1] for iftypeid in self.interfaceobjects for interface_instance in self.interfaceobjects[iftypeid]]
+            self.logger.debug('Added {0} interfaces'.format(len(value['interfaces'])))
+            value['groups'] = [{"groupid": self.groupopjects[groupname].id} for groupname in self.groupopjects]
+            self.logger.debug('Added {0} groups'.format(len(value['groups'])))
+            value['templates'] = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
+            self.logger.debug('Added {0} templates'.format(len(value['templates'])))
+        else:
+            self.logger.warning('get_create_modifier called even if an hostid is available')
+
+        return value
+
+
+
+class zbxtemplate(zbxhost):
+
+    def __init__(self, api, **kwargs):
+        super(zbxtemplate, self).__init__(api, **kwargs)
+       
+        self.logger = logging.getLogger(__name__)
+        self.difffields[self.difffields.index('hostid')] = 'templateid'
+        self.readonlyfields[self.readonlyfields.index('hostid')] = 'templateid'
+
+        self.apicommands = {
+            "get": "template.get",
+            "create": "template.create",
+            "update": "template.update",
+            "delete": "template.delete",
+        }
+
+
+    @property
+    def id(self):
+        return self.templateid
+
+    @property
+    def hostid(self):
+        return self.templateid
+
+    @property
+    def request_result(self):
+        return self.templateid
+    
+    @request_result.setter
+    def request_result(self, value):
+        result = value.get('result', {})
+        ids = result.get('templateids', [])
+        if len(ids) >= 1:
+            self.online_items['templateid'] = ids[0]
+
+    @property
+    def templateid(self):
+        return self.online_items.get('templateid', None)
+
+    @templateid.setter
+    def templateid(self, value):
+        self.online_items['templateid'] = value
+        # raise core.ReadOnlyField('templateid is an readonly field')
+
+    def get_update_modifier(self, value):
+        if self.id:
+            value['templateid'] = self.id
             value['groups'] = [{"groupid": self.groupopjects[groupname].id} for groupname in self.groupopjects]
             if len(value['groups']) == 0:
                 del value['groups']
@@ -645,23 +743,53 @@ class zbxhost(core.zbx):
             if len(value['templates']) == 0:
                 del value['templates']
 
-            # ass = [{"interfaceid": interface_instance.id} for iftypeid in self.interfaceobjects for interface_instance in self.interfaceobjects[iftypeid]]
-            # sdf = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
-            # zxcv = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
-
         return value
 
     def get_create_modifier(self, value):
-        self.interface_mains()
-        # pprint(value)
-        # pprint(type(value))
-        pprint(self.groupopjects)
-        value['interfaces'] = [interface_instance.get('hostcreate')[1] for iftypeid in self.interfaceobjects for interface_instance in self.interfaceobjects[iftypeid]]
         value['groups'] = [{"groupid": self.groupopjects[groupname].id} for groupname in self.groupopjects]
-        value['templates'] = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
-        # qq = [interface_instance.get('hostcreate')[1] for iftypeid in self.interfaceobjects for interface_instance in self.interfaceobjects[iftypeid]]
-        # qq = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
-        # qq = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
-       
+        value['templates'] = [{"templateid": self.templates[templatename].id} for templatename in self.templates]       
         return value
 
+
+
+    # def get(self, param_type=None):
+    #     retval = dict()
+    #     if not param_type:
+    #         if self.id:
+    #             param_type = 'update'
+    #         else:
+    #             param_type = 'create'
+
+
+    #     if param_type == 'create':
+    #         if self.id:
+    #             return [False, retval]
+    #         # pprint(self.templates['Template OS Linux'].get())
+    #         # pprint(self.templates['Template OS Linux'].online_items)
+    #         retval = dict(self.online_items)
+    #         retval['groups'] = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
+    #         retval['templates'] = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
+            
+    #     if param_type == 'update':
+    #         if not self.id:
+    #             return [False, retval]
+    #         retval = dict(self.mergediff)
+    #         retval['templateid'] = self.id
+    #         retval['groups'] = [{"groupid": self.groups[groupname].id} for groupname in self.groups]
+    #         retval['templates'] = [{"templateid": self.templates[templatename].id} for templatename in self.templates]
+            
+
+    #     if param_type in ['create', 'update']:
+    #         for param in retval.keys():
+    #             if param in self.readonlyfields:
+    #                 if param_type == 'update' and param == 'templateid':
+    #                     continue
+    #                 else:
+    #                     del retval[param]
+    #     elif param_type == 'delete':
+    #         if self.id:
+    #             retval = [self.id]
+    #         else:
+    #             retval = list()
+
+    #     return [self.apicommands[param_type], retval]

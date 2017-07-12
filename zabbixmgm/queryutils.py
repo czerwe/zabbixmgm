@@ -1,4 +1,8 @@
+import logging
+
 from pprint import pprint
+
+logger = logging.getLogger(__name__)
 
 def query_group_by_name(api, name):
     params = {
@@ -9,6 +13,7 @@ def query_group_by_name(api, name):
     }
     
     result = api.do_request('hostgroup.get', params)['result']
+    logger.debug('query_group_by_name querys for group {0} with {1} results'.format(name, len(result)))
     if len(result) >= 1:
         return result[0]
     else:
@@ -27,6 +32,7 @@ def query_host_by_name(api, name):
     }
     
     result = api.do_request('host.get', params)['result']
+    logger.debug('query_host_by_name querys for host {0} with {1} results'.format(name, len(result)))
     if len(result) >= 1:
         return result[0]
     else:
@@ -41,6 +47,7 @@ def query_template_by_name(api, name):
     }
     
     result = api.do_request('template.get', params)['result']
+    logger.debug('query_template_by_name querys for template {0} with {1} results'.format(name, len(result)))
     if len(result) >= 1:
         return result[0]
     else:
@@ -55,6 +62,7 @@ def query_application_by_name(api, name):
     }
     
     result = api.do_request('application.get', params)['result']
+    logger.debug('query_application_by_name querys for application {0} with {1} results'.format(name, len(result)))
     if len(result) >= 1:
         return result[0]
     else:
@@ -69,6 +77,7 @@ def query_interfaces_by_host(api, host):
     }
 
     result = api.do_request('hostinterface.get', params)['result']
+    logger.debug('query_interfaces_by_host querys for interfaces {0} with {1} results'.format(name, len(result)))
     if len(result) >= 1:
         return result
     else:
@@ -82,6 +91,7 @@ def query_interfaces_by_id(api, interfaceid):
     }
 
     result = api.do_request('hostinterface.get', params)['result']
+    logger.debug('query_interfaces_by_id querys for interface {0} with {1} results'.format(name, len(result)))
     if len(result) >= 1:
         return result[0]
     else:
@@ -99,9 +109,8 @@ def query_item_by_name_and_host(api, name, host):
             
         },
     }
-    pprint(params)
     result = api.do_request('item.get', params)['result']
-    pprint(result)
+    logger.debug('query_item_by_name_and_host querys for item {0} and host {2} with {1} results'.format(name, len(result), host))
     if len(result) >= 1:
         return result[0]
     else:
@@ -120,6 +129,7 @@ def query_items_from_hostid(api, host):
     # pprint(params)
 
     result = api.do_request('item.get', params)['result']
+    logger.debug('query_items_from_hostid querys for items from host {0} with {1} results'.format(host, len(result)))
     if len(result) >= 1:
         return result
     else:
@@ -134,13 +144,8 @@ def query_num_of_interface_types(api, host, itype):
         },
     }
 
-    # pprint(params)
-
+    logger.debug('query_num_of_interface_types querys for interfaces from host {0} of type {2} with {1} results'.format(host, len(result), itype))
     result = api.do_request('hostinterface.get', params)['result']
     
     return len(result)
-    # if  >= 1:
-    #     return result
-    # else:
-    #     return {}
 

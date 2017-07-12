@@ -3,6 +3,8 @@ import host
 import re
 import logging
 from pprint import pprint
+
+
 class zbxinterface(core.zbx):
 
     TYPE_AGENT = 1
@@ -20,17 +22,7 @@ class zbxinterface(core.zbx):
         self.difffields = ['interfaceid', 'useip', 'ip', 'dns', 'port', 'bulk', 'type', 'hostid', 'main']
        
         self.readonlyfields = ['interfaceid']
-        # self.online_items = {'ip': '', 'dns': ''}
-        # self.online_items = {}
         self.assignedhost = None
-
-        # setting some defaults
-        # self.main = 'no'
-        # self.port = '10050'
-        # self.type =zbxinterface.TYPE_AGENT
-        # self.main = 0
-
-
         
         for att in kwargs.keys():
             if att in self.difffields + ['mask', 'host']:
@@ -56,8 +48,6 @@ class zbxinterface(core.zbx):
             "delete": "hostinterface.delete",
             'hostcreate': ''
         }
-
-
 
     @property
     def id(self):
@@ -211,25 +201,11 @@ class zbxinterface(core.zbx):
         else:
             raise core.InvalidFieldValue(message='{0} is not a supported interface bulk type'.format(value), status=2)
 
-    @property
-    def mask(self):
-        return self.get_attrs(withreadonly=True, verify=False)
-
-    @mask.setter
-    def mask(self, value):
-        for passed_key in value.keys():
-            self.logger.debug('Got {0} with value {1}({2})'.format(passed_key, value[passed_key], type(value[passed_key])))
-            setattr(self, passed_key, value[passed_key])
-        # self.merge(value)
-
 
     def merge(self, dictionary):
-        # pprint (dictionary)
-        # pprint(self.diff(dictionary))
         left, right, total = self.diff(dictionary)
         self.mergediff = right
         for key in right.keys():
-            # setattr(self, key, right[key])
             self.online_items[key] = right[key]
 
 

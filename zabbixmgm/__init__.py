@@ -1,9 +1,9 @@
 from application import zbxapplication
 from group import zbxgroup
-from template import zbxtemplate
+# from template import zbxtemplate
 from item import zbxitem
 from interface import zbxinterface
-from host import zbxhost
+from host import zbxhost, zbxtemplate
 from queryutils import *
 
 __version__ = '0.1.0'
