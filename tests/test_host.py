@@ -465,6 +465,49 @@ class host_tests(unittest2.TestCase):
 
         
 
+    def test_host_add_faulty_interfaces(self):
+        thost = zabbixmgm.zbxhost(self.apimock, mask=fullhost)
+        with self.assertRaises(zabbixmgm.core.WrongType):
+            thost.add_interface(24)
+
+        
+        with self.assertRaises(zabbixmgm.core.WrongType):
+            thost.add_interface('24')
+
+        
+        with self.assertRaises(zabbixmgm.core.WrongType):
+            thost.add_interface(zabbixmgm.zbxhost(self.apimock, name='fake'))
+
+
+
+
+    def test_host_add_faulty_groups(self):
+        thost = zabbixmgm.zbxhost(self.apimock, mask=fullhost)
+        with self.assertRaises(zabbixmgm.core.WrongType):
+            thost.add_group(24)
+
+        
+        with self.assertRaises(zabbixmgm.core.WrongType):
+            thost.add_group('24')
+
+        
+        with self.assertRaises(zabbixmgm.core.WrongType):
+            thost.add_group(zabbixmgm.zbxhost(self.apimock, name='fake'))
+
+
+    def test_host_add_faulty_templates(self):
+        thost = zabbixmgm.zbxhost(self.apimock, mask=fullhost)
+        with self.assertRaises(zabbixmgm.core.WrongType):
+            thost.add_template(24)
+
+        
+        with self.assertRaises(zabbixmgm.core.WrongType):
+            thost.add_template('24')
+
+        
+        with self.assertRaises(zabbixmgm.core.WrongType):
+            thost.add_template(zabbixmgm.zbxhost(self.apimock, name='fake'))
+
 
 
     # def test_host_interface_upon_update_2inf(self):

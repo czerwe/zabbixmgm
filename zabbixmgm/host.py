@@ -580,11 +580,11 @@ class zbxhost(core.zbx):
 
     def add_interface(self, interfaceobject):
         if not type(interfaceobject) == interface.zbxinterface:
-            self.logger.error('passed interfaceobject is not the correct type must be zbxinterface but is {0}'.format(type(groupobject)))
-            return False
+            errmsg = 'passed interfaceobject is not the correct type must be zbxinterface but is {0}'.format(type(interfaceobject))
+            self.logger.critical(errmsg)
+            raise core.WrongType(errmsg, 3)
 
         tid, tidx = self.search_interface(host=interfaceobject.host, port=interfaceobject.port)
-        self.logger.info('Interface {host}:{port} already exist in current configuration'.format(host=interfaceobject.host, port=interfaceobject.port)) 
         idx = interfaceobject.type
         if not tid :
             if not self.interfaceobjects.get(idx, False):
@@ -596,14 +596,16 @@ class zbxhost(core.zbx):
             interfaceobject.add_host(self)
             return True
         else:
-            self.logger.warning('Interface {host}:{port} not added'.format(host=interfaceobject.host, port=interfaceobject.port)) 
+            self.logger.warning('Interface {host}:{port} not added not added'.format(host=interfaceobject.host, port=interfaceobject.port)) 
             
         return False
 
 
     def del_interface(self, tid, tidx):
-        del self.interfaceobjects[tid][tidx]
+        self.logger.info("removing interface {0} ({1}:{2})".format(self.interfaceobjects[tid][tidx].id, self.interfaceobjects[tid][tidx].host, self.interfaceobjects[tid][tidx].port))
+        del self.interfaceobjects[tid][tidx]        
         if len(self.interfaceobjects[tid]) == 0:
+            self.logger.info('removed last interface of type {0}'.format(tid))
             del self.interfaceobjects[tid]
 
 
@@ -633,8 +635,9 @@ class zbxhost(core.zbx):
 
     def add_group(self, groupobject):
         if not type(groupobject) == group.zbxgroup:
-            self.logger.error('passed groupobject is not the correct type must be zbxgroup but is {0}'.format(type(groupobject)))
-            return False
+            errmsg = 'passed groupobject is not the correct type must be zbxgroup but is {0}'.format(type(groupobject))
+            self.logger.critical(errmsg)
+            raise core.WrongType(errmsg, 3)
 
         self.logger.info('Added group {0} (id: {1})'.format(groupobject.name, groupobject.id))
         self.groupopjects[groupobject.name] = groupobject
@@ -642,9 +645,11 @@ class zbxhost(core.zbx):
 
 
     def add_template(self, templateobject):
-        if type(templateobject) == template.zbxtemplate:
-            self.logger.error('passed templateobject is not the correct type must be zbxtemplate but is {0}'.format(type(groupobject)))
-            
+        if not type(templateobject) == zbxtemplate:
+            errmsg = 'passed templateobject is not the correct type must be zbxtemplate but is {0}'.format(type(templateobject))
+            self.logger.critical(errmsg)
+            raise core.WrongType(errmsg, 3)
+
         self.templates[templateobject.name] = templateobject
 
 

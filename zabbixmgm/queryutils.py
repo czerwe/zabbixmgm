@@ -45,7 +45,6 @@ def query_template_by_name(api, name):
             'name': [name]
         }
     }
-    
     result = api.do_request('template.get', params)['result']
     logger.debug('query_template_by_name querys for template {0} with {1} results'.format(name, len(result)))
     if len(result) >= 1:
@@ -91,7 +90,7 @@ def query_interfaces_by_id(api, interfaceid):
     }
 
     result = api.do_request('hostinterface.get', params)['result']
-    logger.debug('query_interfaces_by_id querys for interface {0} with {1} results'.format(name, len(result)))
+    logger.debug('query_interfaces_by_id querys for interface {0} with {1} results'.format(interfaceid, len(result)))
     if len(result) >= 1:
         return result[0]
     else:

@@ -1,5 +1,7 @@
 import sys
 import zabbixmgm
+import log
+import logging
 from pprint import pprint
 from zabbix.api import ZabbixAPI
 
@@ -30,16 +32,16 @@ def create_application(appname, host):
     return retApp
 
 
-def get_template(templatename, group, subtemplates=list()):
+def get_template(templatename, group=None, subtemplates=list()):
     resp = zabbixmgm.query_template_by_name(zapi, name=templatename)
     retTemplate = zabbixmgm.zbxtemplate(zapi, name=templatename, mask=resp)
-    retTemplate.add_group(group)
+    if group:
+        retTemplate.add_group(group)
+    
     for i in subtemplates:
         retTemplate.add_template(i)
 
-    
     commit_template(retTemplate)
-
     return retTemplate
 
 def get_interface(host, port, itype):
@@ -74,16 +76,21 @@ def commit_host(host):
     host.request_result = zapi.do_request(cmd, param)
 
 def get_host(hostname, group):
+    logger = logging.getLogger(__name__)
+    logger.info("Try to get host {0} with group {1}".format(hostname, group.id))
     resp = zabbixmgm.query_host_by_name(zapi, hostname)
+    logger.debug(resp)
     retHost = zabbixmgm.zbxhost(zapi, name=hostname, mask=resp)
     retHost.add_group(group)
     
     if not retHost.id:
+        logger.info("Host {0} did not exist create new interface".format(hostname, group.id))
         inf = zabbixmgm.zbxinterface(zapi)
         inf.host = retHost.name
         retHost.add_interface(inf)
     else:
         for interface in resp.get('interfaces', {}):
+            logger.info("Host {0} exists get interface {1}".format(hostname, interface['interfaceid']))
             sub_interface = zabbixmgm.query_interfaces_by_id(zapi, interface['interfaceid'])
             partinterface = zabbixmgm.zbxinterface(zapi, mask=sub_interface)
             retHost.add_interface(partinterface)
@@ -91,6 +98,9 @@ def get_host(hostname, group):
     commit_host(retHost)
 
     return retHost
+
+
+
 
 
 class apptemplate(object):
@@ -267,10 +277,20 @@ class jmxapptemplate(apptemplate):
 
 
 
-ec = eventCorrelator()
-ag = applicationservice()
+# ec = eventCorrelator()
+# ag = applicationservice()
 
-n3 = get_host('52n03.s52.local', create_group("MCng Backend"))
+grp = create_group("MCng Backend")
+
+oslinuxtmplate = get_template('Template OS Linux', grp)
+
+for i in [3, 4, 5, 6, 7, 8]:
+    n3 = get_host('52n0{0}.s52.local'.format(i), create_group("MCng Backend"))
+    n3.add_template(oslinuxtmplate)
+    c, l = n3.get()
+
+
+    zapi.do_request(c, l)
 
 # ec.assign_to_host(n3, '40002')
 # ag.assign_to_host(n3, '40003')
