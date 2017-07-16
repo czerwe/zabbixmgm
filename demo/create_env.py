@@ -8,7 +8,7 @@ from zabbix.api import ZabbixAPI
 # zapi = ZabbixAPI(url='http://192.168.52.10:91', user='Admin', password='zabbix')
 zapi = ZabbixAPI(url='http://localhost', user='Admin', password='zabbix')
 
-
+import pdb
 
 def create_group(groupname):
     resp = zabbixmgm.query_group_by_name(zapi, groupname)
@@ -132,7 +132,7 @@ class apptemplate(object):
 
 class jmxapptemplate(apptemplate):
 
-    def __init__(self, shortname, longname, groupname):
+    def __init__(self, shortname, longname, groupnameu):
         super(jmxapptemplate, self).__init__(self, shortname, longname, groupname)
 
     def get_item(self, itemname):
@@ -168,10 +168,10 @@ class jmxapptemplate(apptemplate):
 
 
 
-# class eventCorrelator(object):
+class eventCorrelator(jmxapptemplate):
 
-#     def __init__(self):
-#         self.app_short_name = 'EC'
+    def __init__(self):
+        self.app_short_name = 'EC'
 #         # template_response = zabbixmgm.query_template_by_name(zapi,'Template OS Linux')
 #         # tpl_oslinux = zabbixmgm.zbxtemplate(zapi, mask=template_response, name='blub')
 
@@ -280,17 +280,18 @@ class jmxapptemplate(apptemplate):
 # ec = eventCorrelator()
 # ag = applicationservice()
 
+pdb.set_trace()
 grp = create_group("MCng Backend")
-
 oslinuxtmplate = get_template('Template OS Linux', grp)
+pdb.set_trace()
 
 for i in [3, 4, 5, 6, 7, 8]:
     n3 = get_host('52n0{0}.s52.local'.format(i), create_group("MCng Backend"))
     n3.add_template(oslinuxtmplate)
     c, l = n3.get()
 
-
     zapi.do_request(c, l)
+
 
 # ec.assign_to_host(n3, '40002')
 # ag.assign_to_host(n3, '40003')
