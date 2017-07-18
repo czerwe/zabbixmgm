@@ -1,248 +1,158 @@
 from pprint import pprint
+import logging
+
+
+class ReadOnlyField(Exception):
+    def __init__(self, message, status=0):
+        super(ReadOnlyField, self).__init__(message, status)
+
+
+class InvalidFieldValue(Exception):
+    def __init__(self, message, status=0):
+        super(InvalidFieldValue, self).__init__(message, status)
+
+class MissingField(Exception):
+    def __init__(self, message, status=0):
+        super(MissingField, self).__init__(message, status)
+
+
+class WrongType(Exception):
+    def __init__(self, message, status=0):
+        super(WrongType, self).__init__(message, status)
+
 
 class zbx(object):
 
     inventory = dict()
 
     def __init__(self, api):
+        self.logger = logging.getLogger(__name__)
         self.api = api
         self.objectname = None
         self.online_items = dict()
+        self.difffields = list()
+        self.mergediff = dict()
+        self.readonlyfields = list()
+        self.required_fields = list()
+
+    @property
+    def mask(self):
+        self.logger.debug('mask.get called')
+        return self.get_attrs(withreadonly=True, verify=False)
+
+    @mask.setter
+    def mask(self, value):
+        for passed_key in value.keys():
+            self.logger.debug('mask.set contains {0} with value {1}({2})'.format(passed_key, value[passed_key], type(value[passed_key])))
+            setattr(self, passed_key, value[passed_key])
 
 
-    def get_objectid(self, idstring):
+    def diff(self, iface):
+        """
+        Searches differences between the current zbxdata and an passed zbxdata.
+        It resturns three dictionaries. Fist dictionary is the current original values
+        The sedond dictironary is the passed values and the third contains only values that 
+        are only exist in either of the two dictionarys.
+        
+        :param iface: genertated interface dictionary
+        :type iface: dict
+        
+        :return: list of three dictionaries
+        :rtype: list
+        """
+        self.logger.error('DEPRICATED diff called')
+        diff_full = dict()
+        diff_left = dict()
+        diff_right = dict()
+        
+        for indexname in self.difffields:
+            left = self.online_items.get(indexname, None)
+            right = iface.get(indexname, None)
+            if not left == right:
+                if left:
+                    diff_left[indexname] = self.online_items.get(indexname, '')
+                    if not right:
+                        diff_full[indexname] = self.online_items.get(indexname, '')
 
-        if type(self.online_items) == dict and idstring in self.online_items.keys():
-            return self.online_items[idstring]
-        else:
-            return 0
+                if right:
+                    diff_right[indexname] = iface.get(indexname, '')
+                    if not left:
+                        diff_full[indexname] = iface.get(indexname, '')
 
-
-    def create_object(self, queryfunction, param={}, online_indicator=None):
-        if online_indicator == None:
-            online_indicator = len(self.online_items) > 0
-
-        if not online_indicator:
-            result = self.api.do_request(queryfunction, param)
-            return True
-
-        return False
-
-
-    def delete_object(self, queryfunction, params):
-        if len(self.online_items) > 0:
-            result = self.api.do_request(queryfunction, params)
-
-            print('----------------\n{0}: {1}\n\t{2}\n----------------'.format(queryfunction, filter, result))
-            return result['result']
-
-        return {}
-
-    def get_query(self, queryfunction, filter=None):
-
-        if not filter:
-            query_result = self.api.do_request(queryfunction, {})
-        else:
-            query_result = self.api.do_request(queryfunction, {
-                              'filter': filter,
-                              'output': 'extend'
-                          })
-
-        print('----------------\n{0}: {1}\n\t{2}\n----------------'.format(queryfunction, filter, query_result))
-
-        if len(query_result['result']) == 1:
-            self.online_items = query_result['result'][0]
-        elif len(query_result['result']) > 1:
-            self.online_items = query_result['result']
-        else:
-            self.online_items=()
-
-        return self.online_items
+        return [diff_left, diff_right, diff_full]
 
 
-    # def get_hosts(self, filter=None):
-    #     if not filter:
-    #         host = zapi.do_request('host.get', {})
-    #     else:
-    #         host = zapi.do_request('host.get', {
-    #                           'selectGroups': "extend",
-    #                           'selectParentTemplates': ["name"],
-    #                           'filter': filter,
-    #                           'output': 'extend'
-    #                       })
-    #     return host['result']
+    def merge(self, dictionary):
+        self.logger.error('DEPRICATED merge called')
+        left, right, total = self.diff(dictionary)
+        self.mergediff = right
+        for key in right.keys():
+            # setattr(self, key, right[key])
+            self.online_items[key] = right[key]
 
 
-    # def get_interfaces(self, hostid=None):
-    #     if not filter:
-    #         return dict()
-    #     else:
-    #         interfaces = zapi.do_request('hostinterface.get', {
-    #                           'hostids': hostid,
-    #                           'output': 'extend'
-    #                       })
+    def get_update_modifier(self, value):
+        self.logger.debug('empty update modifier called')
+        return value
 
-    #     return interfaces['result']
-
-
-class zbxinterface(zbx):
-
-    TYPE_AGENT = 1
-    TYPE_SNMP = 2
-    TYPE_IPMI = 3
-    TYPE_JMX = 4
-
-    def __init__(self, api, interfacename):
-        super(zbxinterface, self).__init__(api)
-        self.online_items  = dict()
-        self.objectname = interfacename
-        self.set_default_params()
-
-    def get_name(self):
-        return self.objectname
-
-    def set_default_params(self):
-        self.add_param('type', zbxinterface.TYPE_AGENT)
-        self.add_param('main', 0)
-        self.add_param('useip', 1)
-        self.add_param('dns', '')
-        self.add_param('ip', '')
-        self.add_param('port', '10050')
-
-
-    def add_param(self, key, value):
-        self.online_items[key] = value
-
-    def set_main(self):
-        self.add_param('main', 1)
-
-    def get_interface(self):
-        return self.online_items
-
-
-class zbxhost(zbx):
-
-    def __init__(self, api, hostname):
-        super(zbxhost, self).__init__(api)
-        self.objectname = hostname
-        self.interfaces = dict()
-        self.groups = dict()
-        self.templates = dict()
-        self.update()
-        pprint(self.online_items)
-
-    def get_hosts(self, filter=None):
-        if not filter:
-            host = self.api.do_request('host.get', {})
-        else:
-            host = self.api.do_request('host.get', {
-                              'selectGroups': "extend",
-                              'selectParentTemplates': ["name"],
-                              'filter': filter,
-                              'output': 'extend'
-                          })
-
-        self.online_items = host['result']
-
-    def update(self):
-        self.get_hosts(filter={'name': self.objectname})
-
-
-    def get_name(self):
-        return self.objectname
-
-    def get_id(self):
-        return self.get_objectid('hostid')
-
-
-    def add_interface(self, interface):
-        self.interfaces[interface.get_name()] = interface
-
-    def add_group(self, group):
-        self.groups[group.get_name()] = group
-
-
-    def add_template(self, template):
-        self.templates[template.get_name()] = template
-
-
-    def create(self):
-        params = {
-                    "host": self.objectname, 
-                    "interfaces": [self.interfaces[interf].get_interface() for interf in self.interfaces], 
-                    'groups': [{"groupid": self.groups[groupname].get_id()} for groupname in self.groups], 
-                    # 'groups': dict(("groupid", self.groups[groupname].get_id()) for groupname in self.groups), 
-                    'templates': [{"templateid": self.templates[templatename].get_id()} for templatename in self.templates], 
-                    
-                }
-        pprint(params)
-        self.create_object('host.create', params)
-
-    # def delete(self):
-    #     if self.get_id() > 0:
-    #         result = self.api.do_request('host.delete', [self.hostonline['hostid']])
-
-    #         if 'result' in result and self.hostonline['hostid'] in result['result']['hostids']:
-    #             pprint("delete result: {0}".format(result))
-    #     else:
-    #         print ('no host on zabbix server')
+    def get_create_modifier(self, value):
+        self.logger.debug('empty create modifier called')
+        return value
 
 
 
+    def get_attrs(self, withreadonly=False, verify=False):
+        self.logger.debug('get_attrs called  withreadonly={0} verify={1}'.format(withreadonly, verify))
+        all_attrs = dict((attr, getattr(self, attr)) 
+                        for attr in self.difffields  
+                        if not getattr(self, attr) == None)
 
-class zbxapplication(zbx):
+        if not withreadonly:
+            for key in all_attrs.keys():
+                if key in self.readonlyfields:
+                    self.logger.debug('Readonlyfield {0} removed, value was {1}'.format(key, all_attrs[key]))
+                    del all_attrs[key]
 
-    def __init__(self, api, applicationname, hostid):
-        super(zbxapplication, self).__init__(api)
-        self.objectname = applicationname
-        self.objecthost = hostid
-        self.update()
+        if verify:
+            for key in self.required_fields:
+                if not key in all_attrs.keys():
+                    self.logger.critical('Missing attribute named {0}'.format(key))
+                    raise MissingField('missing field {0}'.format(key), 5)
+              
+        return all_attrs
 
 
-    def get_applications(self, hostid=None, name=None):
+    def get(self, param_type=None):
 
-        if (hostid and name) or (not hostid and not name):
-            #TODO exception
-            return False
-
-        else:
-            parameters = {'output': 'extend'}
-            if hostid:
-                parameters['hostids'] = hostid
+        if not param_type:
+            self.logger.debug('Did not recieved query type, evaluating')
+            if self.id:
+                param_type = 'update'
             else:
-                parameters['names'] = name
+                param_type = 'create'
+        
+        self.logger.info('Generating query dict for {0}'.format(param_type))
 
-            query_result = self.api.do_request('application.get', parameters)
+        if param_type == 'create':
+            if self.id:
+                self.logger.error('{0} not possible, existing id'.format(param_type))
+                return [None, {}]
+            retval = self.get_create_modifier(self.get_attrs(withreadonly=False, verify=True))
 
-        if len(query_result['result']) == 1:
-            self.online_items = query_result['result'][0]
-        elif len(query_result['result']) > 1:
-            self.online_items = query_result['result']
-        else:
-            self.online_items=()
+        if param_type == 'update':
+            if not self.id:
+                self.logger.error('{0} not possible, missing id'.format(param_type))
+                return [None, {}]
+            retval = self.get_update_modifier(self.get_attrs(withreadonly=False, verify=True))
 
-        return self.online_items
-
-
-    def update(self):
-        self.get_applications(hostid=self.objecthost)
-
-        if type(self.online_items) == dict():
-            if not self.online_items['name'] == self.objectname:
-                self.online_items == dict()
-
-    def get_id(self):
-        return self.get_objectid('applicationid')
-
-
-    def create(self):
-        params = {'name': self.objectname, 'hostid': self.objecthost}
-        self.create_object('application.create', params)
-        self.update()
-        return self.get_id()
+        if param_type == 'delete':
+            if self.id:
+                self.logger.info('{0} possible existing id'.format(param_type))
+                retval = [self.id]
+            else:
+                self.logger.error('{0} not possible, missing id'.format(param_type))
+                retval = list()
 
 
-    def delete(self):
-        self.delete_object('application.delete', [self.get_id()])
 
-
+        return [self.apicommands[param_type], retval]
